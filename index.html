@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>台股科技關係樹狀看板</title>
+<title>台股科技關係樹狀看板 - 盤後自動更新版</title>
 <style>
 :root{
   --bg:#0f0f10;--bg2:#18181b;--bg3:#27272a;--bg4:#3f3f46;
@@ -37,20 +37,13 @@ h1{font-size:15px;font-weight:700;white-space:nowrap}
 #status{font-size:11px;color:var(--text2);margin-bottom:8px;padding:5px 10px;border-radius:6px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;gap:6px;flex-wrap:wrap;line-height:1.8;min-height:30px}
 .stag{font-size:10px;padding:1px 6px;border-radius:8px;font-weight:600;display:inline-block;white-space:nowrap}
 .stag.twse{background:#14532d;color:#86efac}
-.stag.yahoo{background:#78350f;color:#fcd34d}
-.stag.date{background:#3b0764;color:#d8b4fe}
+.stag.tpex{background:#3b0764;color:#d8b4fe}
 .stag.listed{background:#1e3a5f;color:#93c5fd}
 .stag.otc{background:#3b1f5e;color:#c4b5fd}
-.stag.emerging{background:#1c3a2f;color:#6ee7b7}
 .legend{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;align-items:center}
-.lnote{font-size:10px;color:var(--text3)}
 .badge{font-size:10px;padding:2px 6px;border-radius:9px;font-weight:500;white-space:nowrap;display:inline-block}
-.bup{background:#14532d;color:#86efac}
-.bdn{background:#1e3a5f;color:#93c5fd}
-.bsub{background:#3b0764;color:#d8b4fe}
-.bpeer{background:#27272a;color:#a1a1aa}
-.bcmp{background:#450a0a;color:#fca5a5}
-.broot{background:#1e1b4b;color:#a5b4fc}
+.bup{background:#14532d;color:#86efac}.bdn{background:#1e3a5f;color:#93c5fd}.bsub{background:#3b0764;color:#d8b4fe}
+.bpeer{background:#27272a;color:#a1a1aa}.bcmp{background:#450a0a;color:#fca5a5}.broot{background:#1e1b4b;color:#a5b4fc}
 .nrow{display:flex;align-items:center}
 .iseg{width:18px;display:flex;justify-content:center;position:relative;flex-shrink:0;align-self:stretch}
 .vl{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--border)}
@@ -58,27 +51,19 @@ h1{font-size:15px;font-weight:700;white-space:nowrap}
 .hc .co{position:absolute;left:50%;top:0;bottom:50%;width:1px;background:var(--border)}
 .hc .hb{height:1px;background:var(--border);width:100%;position:absolute;top:50%}
 .tog{width:16px;height:16px;border:1px solid var(--border2);border-radius:3px;background:var(--bg2);color:var(--text2);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:4px}
-.tog:hover{background:var(--bg4)}
-.card{display:flex;align-items:center;gap:5px;padding:5px 9px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);cursor:pointer;margin:2px 0;transition:border-color .12s,background .12s;min-width:0;width:fit-content;max-width:820px}
-.card:hover{border-color:var(--border2);background:var(--bg3)}
+.card{display:flex;align-items:center;gap:5px;padding:5px 9px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);cursor:pointer;margin:2px 0;transition:all .12s;width:fit-content;max-width:820px}
 .card.rc{border-color:var(--accent);background:var(--bg3)}
-.sid{font-size:11px;color:var(--text2);font-weight:600;min-width:30px;flex-shrink:0}
-.sn{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;flex-shrink:0;min-width:64px}
-.ind-t{font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;flex-shrink:0}
-.pval{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;min-width:52px;text-align:right;flex-shrink:0}
-.pchg{font-size:10px;min-width:54px;text-align:right;flex-shrink:0}
+.sid{font-size:11px;color:var(--text2);font-weight:600;min-width:30px}
+.sn{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;min-width:64px}
+.pval{font-size:13px;font-weight:700;min-width:52px;text-align:right}
+.pchg{font-size:10px;min-width:54px;text-align:right}
 .up{color:var(--up)}.dn{color:var(--dn)}.neu{color:var(--text3)}
-.volp{font-size:10px;color:var(--text3);min-width:44px;text-align:right;flex-shrink:0}
-.pep{font-size:10px;color:var(--text3);min-width:42px;text-align:right;flex-shrink:0}
-.dp{background:var(--bg2);border-radius:var(--r);border:1px solid var(--border);padding:9px 13px;margin:3px 0 3px 38px;font-size:11px;line-height:1.8;max-width:700px}
+.dp{background:var(--bg2);border-radius:var(--r);border:1px solid var(--border);padding:9px 13px;margin:3px 0 3px 38px;font-size:11px;line-height:1.8}
 .dg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:3px 16px;margin-top:7px}
 .di{display:flex;justify-content:space-between;gap:8px}
-.dl{color:var(--text2)}.dv{font-weight:500;color:var(--text)}
-.rn{font-size:10px;color:var(--text3);margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}
-.spin{display:inline-block;width:11px;height:11px;border:1.5px solid var(--border2);border-top-color:var(--text2);border-radius:50%;animation:sp .8s linear infinite;flex-shrink:0}
+.spin{display:inline-block;width:11px;height:11px;border:1.5px solid var(--border2);border-top-color:var(--text2);border-radius:50%;animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .tree-scroll{overflow-x:auto;padding-bottom:24px}
-.empty-msg{color:var(--text3);font-size:13px;padding:28px;text-align:center}
 </style>
 </head>
 <body>
@@ -86,1531 +71,197 @@ h1{font-size:15px;font-weight:700;white-space:nowrap}
   <div class="header">
       <h1>📊 台股科技關係樹狀看板</h1>
       <div class="root-wrap">
-        <input type="text" id="root-input" class="root-input" placeholder="輸入主軸代號，例：2330" autocomplete="off"
-          oninput="onRootInput(this.value)" onkeydown="if(event.key==='Enter')applyRoot();if(event.key==='Escape')hideAC()">
+        <input type="text" id="root-input" class="root-input" placeholder="輸入代碼，例：2330" autocomplete="off" oninput="onRootInput(this.value)">
         <div id="ac-box" class="ac-box" style="display:none"></div>
         <button class="go-btn" onclick="applyRoot()">設為主軸</button>
       </div>
-      <button class="fbtn" onclick="loadAll()">↻ 更新報價</button>
+      <button class="fbtn" onclick="syncAll()">↻ 同步最新行情</button>
       <button class="fbtn" onclick="expandAll()">全展開</button>
       <button class="fbtn" onclick="collapseAll()">全收合</button>
     </div>
+
     <div class="toolbar">
       <input type="text" id="search" placeholder="搜尋節點..." oninput="render()">
       <button class="fbtn on" data-f="all" onclick="setF('all',this)">全部</button>
       <button class="fbtn" data-f="upstream" onclick="setF('upstream',this)">上游</button>
       <button class="fbtn" data-f="downstream" onclick="setF('downstream',this)">下游</button>
-      <button class="fbtn" data-f="subsidiary" onclick="setF('subsidiary',this)">子公司</button>
-      <button class="fbtn" data-f="peer" onclick="setF('peer',this)">同業</button>
-      <button class="fbtn" data-f="competitor" onclick="setF('competitor',this)">競爭</button>
     </div>
-    <div id="sector-bar" class="legend" style="margin-bottom: 12px; border-top: 1px solid var(--border); padding-top: 8px;">
-      <span class="lnote" style="margin-right: 5px;">快速顯示產業：</span>
+
+    <div id="sector-bar" class="legend" style="margin-bottom:12px; border-top:1px solid var(--border); padding-top:8px; display:flex; flex-wrap:wrap; gap:4px;">
+      <span class="lnote" style="font-size:10px; color:var(--text3)">快速切換產業：</span>
     </div>
+
     <div class="legend">
-      <span class="badge bup">上游供應</span><span class="badge bdn">下游客戶</span>
-      <span class="badge bsub">子/關係企業</span><span class="badge bpeer">同業</span><span class="badge bcmp">競爭對手</span>
-      <span class="stag listed" style="font-size:10px">上市</span><span class="stag otc" style="font-size:10px">上櫃</span><span class="stag emerging" style="font-size:10px">興櫃</span>
-      <span class="lnote">— 標籤為與上層節點的關係｜點擊節點展開詳情</span>
+      <span class="badge bup">上游供應</span><span class="badge bdn">下游客戶</span><span class="badge bsub">子/關係企業</span>
+      <span class="badge bpeer">同業</span><span class="badge bcmp">競爭對手</span>
+      <span class="stag listed">上市</span><span class="stag otc">上櫃</span>
     </div>
+
     <div id="status"><span class="spin"></span> 初始化中...</div>
     <div class="tree-scroll" id="tree"></div>
-    <div style="margin-top:14px;padding-top:8px;border-top:1px solid var(--border);font-size:10px;color:var(--text3)">
-      📌 股價：Yahoo Finance（非即時）｜產業分類與市場別：TWSE/TPEx OpenAPI｜供應鏈關係：人工整理，非投資建議
-  </div>
 </div>
+
 <script>
-// ================================================================
-// 靜態產業 + 市場別備用資料（API失敗時使用）
-// ================================================================
-const STATIC_INFO = {
-  // 半導體業-上市
-  '2330':['台積電','半導體業','listed'],'2303':['聯華電子','半導體業','listed'],
-  '5347':['世界先進','半導體業','listed'],'6770':['力積電','半導體業','listed'],
-  '3711':['日月光投控','半導體業','listed'],'2325':['矽品精密','半導體業','listed'],
-  '6239':['力成科技','半導體業','listed'],'3413':['京元電子','半導體業','listed'],
-  '6488':['環旭電子','半導體業','listed'],'3691':['環球晶','半導體業','listed'],
-  '5483':['中美晶','半導體業','listed'],'4981':['昇陽半導體','半導體業','otc'],
-  '2454':['聯發科','半導體業','listed'],'2379':['瑞昱半導體','半導體業','listed'],
-  '3034':['聯詠科技','半導體業','listed'],'5274':['信驊科技','半導體業','listed'],
-  '3443':['創意電子','半導體業','listed'],'3035':['智原科技','半導體業','listed'],
-  '2388':['威盛電子','半導體業','listed'],'8016':['慧榮科技','半導體業','otc'],
-  '8299':['群聯電子','半導體業','listed'],'2458':['義隆電子','半導體業','listed'],
-  '3529':['力旺電子','半導體業','otc'],'2344':['華邦電子','半導體業','listed'],
-  '2337':['旺宏電子','半導體業','listed'],'3006':['晶豪科','半導體業','otc'],
-  '4966':['譜瑞-KY','半導體業','listed'],'6531':['愛普股份','半導體業','otc'],
-  '6415':['矽力-KY','半導體業','listed'],'2408':['南亞科技','半導體業','listed'],
-  '3658':['漢磊科技','半導體業','listed'],'3582':['條碼鼎-KY','半導體業','otc'],
-  '6598':['金萬林','半導體業','otc'],'3661':['世芯-KY','半導體業','listed'],
-  '3141':['晶宏半導體','半導體業','otc'],'5347b':['宜特科技','半導體業','listed'],
-  '6510':['精測電子','半導體業','listed'],'3259':['鈺創科技','半導體業','listed'],
-  // 電腦及週邊設備業-上市
-  '2317':['鴻海精密','電腦及週邊設備業','listed'],'2382':['廣達電腦','電腦及週邊設備業','listed'],
-  '2357':['華碩電腦','電腦及週邊設備業','listed'],'2324':['仁寶電腦','電腦及週邊設備業','listed'],
-  '3231':['緯創資通','電腦及週邊設備業','listed'],'2356':['英業達','電腦及週邊設備業','listed'],
-  '6669':['緯穎科技','電腦及週邊設備業','listed'],'3005':['神基科技','電腦及週邊設備業','listed'],
-  '3706':['神達電腦','電腦及週邊設備業','listed'],'2376':['技嘉科技','電腦及週邊設備業','listed'],
-  '2354':['鴻準精密','電腦及週邊設備業','listed'],'2474':['可成科技','電腦及週邊設備業','listed'],
-  '4256':['創見資訊','電腦及週邊設備業','listed'],'6414':['樺漢科技','電腦及週邊設備業','listed'],
-  '3217':['優群科技','電腦及週邊設備業','otc'],'2399':['映泰','電腦及週邊設備業','listed'],
-  // 電子零組件業-上市
-  '2308':['台達電子','電子零組件業','listed'],'2301':['光寶科技','電子零組件業','listed'],
-  '3037':['欣興電子','電子零組件業','listed'],'3189':['景碩科技','電子零組件業','listed'],
-  '2367':['燿華電子','電子零組件業','listed'],'2368':['金像電子','電子零組件業','listed'],
-  '2313':['華通電腦','電子零組件業','listed'],'6270':['晟銘電子','電子零組件業','otc'],
-  '2327':['國巨','電子零組件業','listed'],'2492':['華新科技','電子零組件業','listed'],
-  '2455':['奇力新','電子零組件業','listed'],'3150':['禾伸堂','電子零組件業','otc'],
-  '3515':['奇鋐科技','電子零組件業','listed'],'6230':['超眾科技','電子零組件業','listed'],
-  '8462':['志超科技','電子零組件業','otc'],'3533':['嘉澤端子','電子零組件業','listed'],
-  '2351':['順德工業','電子零組件業','listed'],'6449':['海韻電子','電子零組件業','otc'],
-  '1590':['亞德客-KY','電子零組件業','listed'],'3003':['健和興','電子零組件業','otc'],
-  '6405':['帆宣系統','其他電子業','listed'],'3265':['台灣特化','電子零組件業','listed'],
-  '3023':['信邦電子','電子零組件業','listed'],'2465':['麗臺科技','電子零組件業','listed'],
-  // 光電業-上市
-  '2409':['友達光電','光電業','listed'],'3481':['群創光電','光電業','listed'],
-  '3698':['隆達電子','光電業','listed'],'2448':['晟碟半導體','光電業','listed'],
-  '3008':['大立光','光電業','listed'],'3406':['玉晶光','光電業','listed'],
-  '5371':['中光電','光電業','listed'],'3450':['聯鈞光電','光電業','otc'],
-  '2439':['美律實業','光電業','listed'],'6409':['旭隼科技','光電業','otc'],
-  '3515b':['達邁科技','光電業','listed'],
-  // 通信網路業
-  '2345':['智邦科技','通信網路業','listed'],'3596':['智易科技','通信網路業','listed'],
-  '4906':['正文科技','通信網路業','listed'],'2412':['中華電信','通信網路業','listed'],
-  '4904':['遠傳電信','通信網路業','listed'],'3045':['台灣大哥大','通信網路業','listed'],
-  '4977':['眾達-KY','通信網路業','listed'],'3706b':['台揚科技','通信網路業','listed'],
-  '2461':['光群雷射','通信網路業','otc'],
-  // 電子通路業
-  '3036':['文曄科技','電子通路業','listed'],'3702':['大聯大控股','電子通路業','listed'],
-  '2458b':['益登科技','電子通路業','otc'],
-  // 資訊服務業
-  '6214':['精誠資訊','資訊服務業','listed'],'2453':['凌群電腦','資訊服務業','listed'],
-  '3017':['奇偶科技','資訊服務業','listed'],'6414b':['叡揚資訊','資訊服務業','listed'],
-  '2489':['瑞軒科技','資訊服務業','listed'],
-  // 補齊通訊/光電/資訊服務
-  '2461':['光群雷射','通信網路業','otc'],'2465':['麗臺科技','電子零組件業','listed'],
-  '2489':['瑞軒科技','電腦及週邊設備業','listed'],
-  '3141':['晶宏半導體','半導體業','otc'],'3217':['優群科技','電腦及週邊設備業','otc'],
-  '3259':['鈺創科技','半導體業','listed'],'6409':['旭隼科技','光電業','otc'],
-  // 化合物半導體/高頻
-  '3105':['穩懋半導體','半導體業','listed'],
-  // 散熱
-  '3324':['雙鴻科技','電子零組件業','listed'],'3549':['健策精密','電子零組件業','listed'],
-  // 封裝材料/測試
-  '3374':['精材科技','半導體業','listed'],'8150':['南茂科技','半導體業','listed'],
-  '3462':['同欣電子','半導體業','listed'],
-  // IC設計-感測/觸控/顯示/介面
-  '3227':['原相科技','半導體業','listed'],'3545':['敦泰電子','半導體業','listed'],
-  '3695':['奕力科技','半導體業','listed'],'5269':['祥碩科技','半導體業','listed'],
-  '6643':['M31科技','半導體業','listed'],'3694':['聯笙電子','半導體業','otc'],
-  // PCB/載板
-  '3044':['健鼎科技','電子零組件業','listed'],'3484':['希華晶體','電子零組件業','listed'],
-  '3563':['牧德科技','電子零組件業','listed'],
-  // 網通模組
-  '6285':['啟碁科技','通信網路業','listed'],
-  // 車用電子
-  '3552':['同致電子','電子零組件業','listed'],
-  // 光通訊
-  '3081':['聯亞光電','光電業','listed'],
-  // 記憶體模組品牌
-  '4967':['十銓科技','電腦及週邊設備業','listed'],
-  // 精密傳動/工業自動化
-  '2049':['上銀科技','電子零組件業','listed'],
-  // 電池模組
-  '6121':['新普科技','電子零組件業','listed'],
-  // 資訊服務/雲端
-  '6488b':['緯謙科技','數位雲端','listed'],'6414b':['叡揚資訊','資訊服務業','listed'],
-  // 綠能環保 / 能源
-  '6806':['森崴能源','綠能環保','listed'], '9933':['中鼎','其他類','listed'], 
-  '1513':['中興電','電機機械','listed'], '1519':['華城','電機機械','listed'],
-  '6873':['泓德能源','綠能環保','listed'], '1503':['士電','電機機械','listed'],
-  // 散熱擴充
-  '3017':['奇鋐','電子零組件業','listed'], '3324':['雙鴻','電子零組件業','listed'],
-  '2421':['建準','電子零組件業','listed'], '3653':['健策','電子零組件業','listed'],
-  '3483':['力致','電子零組件業','otc'],
-  // 數位雲端 / 資訊服務
-  '6690':['安碁資訊','數位雲端','otc'], '6811':['宏碁資訊','數位雲端','otc'],
-  '4953':['緯軟','資訊服務業','otc'], '8477':['創業家','數位雲端','otc'],
-  // --- 記憶體族群 (半導體類) ---
-  '2408':['南亞科','半導體業','listed'],
-  '2344':['華邦電','半導體業','listed'],
-  '8299':['群聯','半導體業','otc'], // 上櫃代表
-  '3260':['威剛','電子通路業','otc'], // 上櫃代表
-
-  // --- PCB & ABF 載板 (電子零組件) ---
-  '3037':['欣興','電子零組件業','listed'], // ABF大三雄
-  '8046':['南電','電子零組件業','listed'],
-  '3189':['景碩','電子零組件業','listed'],
-  '2313':['華通','電子零組件業','listed'],
-  '3044':['健鼎','電子零組件業','listed'],
-  '8069':['元太','電子零組件業','otc'], // 上櫃電子紙/PCB應用
-
-  // --- 補充其他重要科技股 ---
-  '3532':['台勝科','半導體業','listed'],
-  '6488':['環球晶','半導體業','otc'], // 上櫃半導體矽晶圓龍頭
-};
-
-// ================================================================
-// 關係資料庫（供應鏈 + 同業 + 競爭 + 子公司）
-// ================================================================
+// --- 資料庫與狀態 ---
+const STATIC_INFO = {}; // 由 API 動態填充
 const REL_DB = {
-
-  // ==================== 晶圓代工 ====================
-  '2330':{name:'台積電',desc:'全球最大晶圓代工廠，3/2nm先進製程領先，CoWoS封裝AI需求旺',children:[
-    {id:'2303',t:'competitor',d:'台灣第二大晶圓代工，主攻28nm+成熟製程'},
-    {id:'6770',t:'competitor',d:'晶圓代工，主攻DRAM及邏輯製程'},
-    {id:'5347',t:'subsidiary',d:'台積電關係企業（持股~27%），8吋特殊製程'},
-    {id:'3443',t:'subsidiary',d:'台積電轉投資ASIC設計服務（持股~35%）'},
-    {id:'3691',t:'upstream',d:'全球第三大矽晶圓供應商，主要上游'},
-    {id:'3265',t:'upstream',d:'半導體特殊化學品供應，製程用材料'},
-    {id:'6405',t:'upstream',d:'廠務工程設備系統整合，建廠夥伴'},
-    {id:'3711',t:'upstream',d:'先進封裝合作（CoWoS/SoIC），晶片封裝'},
-    {id:'3037',t:'upstream',d:'高階IC載板（ABF）供應商'},
-    {id:'2454',t:'downstream',d:'全球最大行動SoC，4/3nm最大客戶'},
-    {id:'2379',t:'downstream',d:'網路/音訊IC設計，台積電製程客戶'},
-    {id:'3034',t:'downstream',d:'顯示驅動IC設計，委外台積電製程'},
-    {id:'6415',t:'downstream',d:'電源管理IC設計，台積電製程'},
-    {id:'8299',t:'downstream',d:'NAND Flash控制器，台積電製程'},
-    {id:'5274',t:'downstream',d:'伺服器BMC管理晶片，台積電製程'},
-    {id:'3661',t:'downstream',d:'AI ASIC設計（世芯），台積電先進製程客戶'},
-  ]},
-  '2303':{name:'聯華電子',desc:'台灣第二大晶圓代工，主攻28nm~0.18μm成熟製程',children:[
-    {id:'2330',t:'competitor',d:'晶圓代工最大競爭對手'},
-    {id:'5347',t:'peer',d:'晶圓代工同業，世界先進'},
-    {id:'6770',t:'peer',d:'晶圓代工同業，力積電'},
-    {id:'3691',t:'upstream',d:'矽晶圓供應商'},
-    {id:'3265',t:'upstream',d:'半導體化學品供應'},
-    {id:'3711',t:'downstream',d:'封裝下游，日月光'},
-    {id:'2379',t:'downstream',d:'成熟製程IC設計客戶'},
-    {id:'3034',t:'downstream',d:'顯示驅動IC客戶，委外UMC製程'},
-  ]},
-  '5347':{name:'世界先進',desc:'台積電關係企業，8吋晶圓特殊製程（功率元件、MEMS）',children:[
-    {id:'2330',t:'subsidiary',d:'母公司台積電，持股約27%'},
-    {id:'2303',t:'peer',d:'成熟製程晶圓代工同業'},
-    {id:'6770',t:'peer',d:'晶圓代工同業'},
-    {id:'3691',t:'upstream',d:'矽晶圓上游'},
-    {id:'2308',t:'downstream',d:'電源IC客戶（功率元件）'},
-    {id:'1590',t:'downstream',d:'工業控制IC客戶'},
-  ]},
-  '6770':{name:'力積電',desc:'晶圓代工，主攻DRAM特殊製程與邏輯IC，前身為力晶',children:[
-    {id:'2330',t:'competitor',d:'晶圓代工競爭對手'},
-    {id:'2303',t:'peer',d:'成熟製程晶圓代工同業'},
-    {id:'5347',t:'peer',d:'晶圓代工同業'},
-    {id:'3691',t:'upstream',d:'矽晶圓上游'},
-    {id:'2344',t:'peer',d:'DRAM相關產業'},
-    {id:'2408',t:'peer',d:'記憶體同業'},
-  ]},
-
-  // ==================== 封裝測試 ====================
-  '3711':{name:'日月光投控',desc:'全球最大OSAT封裝測試廠，CoWoS/SoIC先進封裝策略夥伴',children:[
-    {id:'2325',t:'subsidiary',d:'日月光旗下子公司，BGA/CSP/QFN封裝'},
-    {id:'6239',t:'competitor',d:'封裝測試競爭對手，力成科技'},
-    {id:'3413',t:'competitor',d:'封裝測試競爭對手，京元電子'},
-    {id:'6488',t:'peer',d:'SiP模組封裝同業，環旭電子'},
-    {id:'2330',t:'downstream',d:'台積電晶粒封裝主要客戶'},
-    {id:'2454',t:'downstream',d:'聯發科晶片封裝客戶'},
-    {id:'3037',t:'upstream',d:'IC載板供應商，欣興'},
-    {id:'3189',t:'upstream',d:'IC載板供應商，景碩'},
-  ]},
-  '2325':{name:'矽品精密',desc:'日月光集團旗下，BGA/CSP/LGA封裝測試，與日月光合組投控',children:[
-    {id:'3711',t:'subsidiary',d:'母公司日月光投控'},
-    {id:'6239',t:'peer',d:'封裝測試同業'},
-    {id:'3413',t:'peer',d:'封裝測試同業'},
-    {id:'2330',t:'downstream',d:'台積電晶粒封裝'},
-    {id:'3037',t:'upstream',d:'IC載板上游'},
-  ]},
-  '6239':{name:'力成科技',desc:'台灣第三大封測廠，記憶體與邏輯IC封裝測試',children:[
-    {id:'3711',t:'competitor',d:'封裝測試最大競爭對手'},
-    {id:'3413',t:'peer',d:'封裝測試同業'},
-    {id:'2344',t:'downstream',d:'華邦電記憶體封裝客戶'},
-    {id:'2337',t:'downstream',d:'旺宏記憶體封裝客戶'},
-    {id:'3037',t:'upstream',d:'IC載板上游'},
-  ]},
-  '3413':{name:'京元電子',desc:'半導體測試服務，IC測試為主，晶圓測試與封裝測試',children:[
-    {id:'3711',t:'competitor',d:'封裝測試競爭對手'},
-    {id:'6239',t:'peer',d:'封裝測試同業'},
-    {id:'2330',t:'downstream',d:'測試服務客戶'},
-    {id:'2454',t:'downstream',d:'聯發科測試客戶'},
-    {id:'6510',t:'peer',d:'半導體測試設備同業'},
-  ]},
-  '6488':{name:'環旭電子',desc:'SiP（系統級封裝）模組製造，鴻海集團旗下',children:[
-    {id:'2317',t:'subsidiary',d:'母公司鴻海精密'},
-    {id:'3711',t:'peer',d:'封裝同業（不同技術路線）'},
-    {id:'2330',t:'upstream',d:'晶片製程上游'},
-    {id:'2454',t:'upstream',d:'SoC晶片上游'},
-  ]},
-
-  // ==================== 矽晶圓/材料/設備 ====================
-  '3691':{name:'環球晶',desc:'全球第三大矽晶圓廠，主要供應12吋晶圓給台積電等',children:[
-    {id:'5483',t:'subsidiary',d:'母公司中美晶'},
-    {id:'4981',t:'competitor',d:'矽晶圓同業，昇陽半導體'},
-    {id:'2330',t:'downstream',d:'最大晶圓代工客戶'},
-    {id:'2303',t:'downstream',d:'晶圓代工客戶'},
-    {id:'2344',t:'downstream',d:'IDM記憶體客戶'},
-  ]},
-  '5483':{name:'中美晶',desc:'環球晶母公司，半導體矽晶圓及太陽能多角化經營',children:[
-    {id:'3691',t:'subsidiary',d:'半導體矽晶圓子公司'},
-    {id:'4981',t:'peer',d:'矽晶圓同業'},
-    {id:'2330',t:'downstream',d:'晶圓客戶'},
-  ]},
-  '4981':{name:'昇陽半導體',desc:'半導體矽晶圓，主攻8吋再生晶圓市場',children:[
-    {id:'3691',t:'competitor',d:'矽晶圓競爭對手'},
-    {id:'5483',t:'peer',d:'矽晶圓同業'},
-    {id:'2303',t:'downstream',d:'成熟製程晶圓代工客戶'},
-    {id:'5347',t:'downstream',d:'8吋晶圓代工客戶'},
-  ]},
-  '6405':{name:'帆宣系統',desc:'半導體廠務工程設備系統整合，台積電建廠夥伴',children:[
-    {id:'2330',t:'downstream',d:'最大廠務工程客戶'},
-    {id:'2303',t:'downstream',d:'廠務工程客戶'},
-    {id:'3265',t:'peer',d:'半導體材料/服務同業'},
-  ]},
-  '3265':{name:'台灣特化',desc:'半導體特殊化學品，製程用化學材料供應商',children:[
-    {id:'2330',t:'downstream',d:'製程化學品客戶'},
-    {id:'2303',t:'downstream',d:'製程化學品客戶'},
-    {id:'6405',t:'peer',d:'半導體廠務同業'},
-  ]},
-
-  // ==================== IC設計 ====================
-  '2454':{name:'聯發科',desc:'全球最大行動SoC設計廠，天璣系列旗艦，台積電4/3nm最大客戶',children:[
-    {id:'2330',t:'upstream',d:'主要晶圓代工廠，4/3nm製程'},
-    {id:'3711',t:'upstream',d:'晶片封裝上游'},
-    {id:'3037',t:'upstream',d:'FC-BGA載板上游'},
-    {id:'3034',t:'peer',d:'IC設計同業，顯示驅動IC'},
-    {id:'2379',t:'peer',d:'IC設計同業，網路IC'},
-    {id:'6415',t:'peer',d:'IC設計同業，電源管理IC'},
-    {id:'8299',t:'peer',d:'IC設計同業，Flash控制器'},
-    {id:'2317',t:'downstream',d:'EMS組裝客戶，使用MediaTek SoC'},
-    {id:'2382',t:'downstream',d:'ODM客戶'},
-    {id:'3036',t:'downstream',d:'IC通路商下游'},
-  ]},
-  '2379':{name:'瑞昱半導體',desc:'全球網路/音訊/藍牙IC前三大，Ethernet控制器市佔領先',children:[
-    {id:'2330',t:'upstream',d:'晶圓製程上游'},
-    {id:'3711',t:'upstream',d:'封裝上游'},
-    {id:'2454',t:'peer',d:'IC設計同業'},
-    {id:'3034',t:'peer',d:'IC設計同業'},
-    {id:'2345',t:'downstream',d:'網通設備客戶，使用瑞昱Switch IC'},
-    {id:'3596',t:'downstream',d:'網通設備客戶'},
-    {id:'4906',t:'downstream',d:'無線路由器客戶'},
-  ]},
-  '3034':{name:'聯詠科技',desc:'全球顯示驅動IC（DDIC）龍頭，委外台積電28nm製程生產',children:[
-    {id:'2330',t:'upstream',d:'晶圓製程上游，委外28nm'},
-    {id:'2303',t:'upstream',d:'成熟製程晶圓備援'},
-    {id:'3711',t:'upstream',d:'封裝上游'},
-    {id:'2454',t:'peer',d:'IC設計同業'},
-    {id:'2379',t:'peer',d:'IC設計同業'},
-    {id:'4966',t:'peer',d:'IC設計同業，訊號整合IC'},
-    {id:'2409',t:'downstream',d:'面板驅動IC最大客戶'},
-    {id:'3481',t:'downstream',d:'面板客戶，群創'},
-  ]},
-  '4966':{name:'譜瑞-KY',desc:'DisplayPort/HDMI 2.1訊號整合IC，高速介面IC設計',children:[
-    {id:'2330',t:'upstream',d:'晶圓製程上游'},
-    {id:'2454',t:'peer',d:'IC設計同業'},
-    {id:'2379',t:'peer',d:'IC設計同業'},
-    {id:'3034',t:'peer',d:'顯示IC同業'},
-    {id:'2357',t:'downstream',d:'PC品牌客戶，顯示卡/主機板'},
-    {id:'2376',t:'downstream',d:'顯示卡客戶'},
-  ]},
-  '5274':{name:'信驊科技',desc:'伺服器BMC管理晶片設計龍頭，AI伺服器管理IC市佔超60%',children:[
-    {id:'2330',t:'upstream',d:'晶圓製程上游'},
-    {id:'3443',t:'peer',d:'ASIC設計服務同業'},
-    {id:'6669',t:'downstream',d:'AI伺服器BMC晶片客戶'},
-    {id:'2382',t:'downstream',d:'伺服器ODM客戶'},
-    {id:'2356',t:'downstream',d:'伺服器ODM客戶'},
-  ]},
-  '3443':{name:'創意電子',desc:'台積電轉投資ASIC設計服務（持股~35%），協助客戶在台積電流片',children:[
-    {id:'2330',t:'subsidiary',d:'母公司台積電，持股約35%'},
-    {id:'3035',t:'peer',d:'ASIC設計服務同業'},
-    {id:'5274',t:'peer',d:'IC設計服務同業'},
-    {id:'6531',t:'peer',d:'IC設計同業'},
-    {id:'3661',t:'peer',d:'AI ASIC設計同業'},
-  ]},
-  '3035':{name:'智原科技',desc:'ASIC設計服務與矽智財（IP），台積電製程客戶',children:[
-    {id:'2330',t:'upstream',d:'晶圓製程上游'},
-    {id:'3443',t:'competitor',d:'ASIC設計服務競爭對手'},
-    {id:'5274',t:'peer',d:'IC設計同業'},
-    {id:'6531',t:'peer',d:'IC設計同業'},
-  ]},
-  '6415':{name:'矽力-KY',desc:'電源管理IC（PMIC）設計，AI伺服器電源管理受惠，高毛利',children:[
-    {id:'2330',t:'upstream',d:'晶圓製程上游'},
-    {id:'6531',t:'peer',d:'電源管理IC同業'},
-    {id:'2308',t:'competitor',d:'電源解決方案競爭'},
-    {id:'2454',t:'downstream',d:'SoC搭配PMIC客戶'},
-    {id:'6669',t:'downstream',d:'AI伺服器電源管理客戶'},
-  ]},
-  '6531':{name:'愛普股份',desc:'電源管理IC設計，AI伺服器供電模組受惠族群',children:[
-    {id:'2330',t:'upstream',d:'晶圓製程上游'},
-    {id:'6415',t:'peer',d:'電源管理IC同業'},
-    {id:'3035',t:'peer',d:'IC設計同業'},
-    {id:'6669',t:'downstream',d:'AI伺服器電源客戶'},
-    {id:'2382',t:'downstream',d:'伺服器ODM客戶'},
-  ]},
-  '2388':{name:'威盛電子',desc:'系統單晶片（SoC）設計，工業控制與IoT應用',children:[
-    {id:'2330',t:'upstream',d:'晶圓製程上游'},
-    {id:'2303',t:'upstream',d:'成熟製程備援'},
-    {id:'2454',t:'peer',d:'SoC設計同業'},
-    {id:'2379',t:'peer',d:'IC設計同業'},
-  ]},
-  '8016':{name:'慧榮科技',desc:'NAND Flash主控晶片設計（Silicon Motion），SSD控制器全球前二',children:[
-    {id:'2330',t:'upstream',d:'晶圓製程上游'},
-    {id:'8299',t:'competitor',d:'NAND控制器直接競爭，群聯'},
-    {id:'2344',t:'downstream',d:'NAND應用客戶'},
-    {id:'4256',t:'downstream',d:'記憶體模組品牌客戶'},
-  ]},
-  '8299':{name:'群聯電子',desc:'NAND Flash主控晶片（Phison），SSD控制器全球前二',children:[
-    {id:'2330',t:'upstream',d:'晶圓製程上游'},
-    {id:'8016',t:'competitor',d:'NAND控制器競爭，慧榮'},
-    {id:'2344',t:'downstream',d:'Flash應用客戶'},
-    {id:'4256',t:'downstream',d:'記憶體模組客戶'},
-  ]},
-  '2458':{name:'義隆電子',desc:'觸控IC（TouchPad）設計，AI PC觸控晶片受惠',children:[
-    {id:'2330',t:'upstream',d:'晶圓製程上游'},
-    {id:'2303',t:'upstream',d:'成熟製程備援'},
-    {id:'2382',t:'downstream',d:'筆電ODM客戶（TouchPad IC）'},
-    {id:'2324',t:'downstream',d:'筆電ODM客戶'},
-    {id:'2379',t:'peer',d:'IC設計同業'},
-  ]},
-  '3529':{name:'力旺電子',desc:'嵌入式非揮發記憶體IP（eNVM），半導體矽智財（IP）',children:[
-    {id:'2330',t:'downstream',d:'矽智財IP授權客戶'},
-    {id:'2303',t:'downstream',d:'矽智財IP授權客戶'},
-    {id:'5347',t:'downstream',d:'矽智財IP授權客戶'},
-    {id:'3443',t:'peer',d:'矽智財/ASIC同業'},
-    {id:'3035',t:'peer',d:'矽智財IP同業'},
-  ]},
-  '2344':{name:'華邦電子',desc:'NOR Flash全球龍頭，利基型DRAM製造，車用/工業記憶體',children:[
-    {id:'2330',t:'upstream',d:'製程技術合作，部分委外'},
-    {id:'2303',t:'upstream',d:'晶圓代工合作'},
-    {id:'2337',t:'peer',d:'NOR Flash同業競爭，旺宏'},
-    {id:'2408',t:'peer',d:'DRAM記憶體同業'},
-    {id:'6239',t:'upstream',d:'封裝測試服務'},
-    {id:'4256',t:'downstream',d:'記憶體模組下游'},
-    {id:'3036',t:'downstream',d:'IC通路下游'},
-  ]},
-  '2337':{name:'旺宏電子',desc:'NOR Flash、Mask ROM設計製造，車用記憶體積極布局',children:[
-    {id:'2344',t:'competitor',d:'NOR Flash直接競爭'},
-    {id:'2408',t:'peer',d:'記憶體製造同業'},
-    {id:'2303',t:'upstream',d:'晶圓代工合作'},
-    {id:'6239',t:'upstream',d:'封裝測試服務'},
-    {id:'3036',t:'downstream',d:'IC通路下游'},
-  ]},
-  '2408':{name:'南亞科技',desc:'DRAM製造商，台塑集團旗下，技術授權自Micron',children:[
-    {id:'2344',t:'peer',d:'記憶體同業，華邦電'},
-    {id:'2337',t:'peer',d:'記憶體同業，旺宏'},
-    {id:'6770',t:'peer',d:'晶圓製造同業'},
-    {id:'8016',t:'downstream',d:'NAND控制器搭配DRAM'},
-    {id:'4256',t:'downstream',d:'記憶體模組下游'},
-    {id:'3036',t:'downstream',d:'IC通路下游'},
-  ]},
-  '3006':{name:'晶豪科',desc:'SRAM/DRAM設計製造，利基型記憶體IC',children:[
-    {id:'2303',t:'upstream',d:'晶圓代工'},
-    {id:'2344',t:'peer',d:'記憶體IC同業'},
-    {id:'2337',t:'peer',d:'記憶體IC同業'},
-    {id:'3036',t:'downstream',d:'IC通路下游'},
-  ]},
-  '3659':{name:'互動娛樂',desc:'IC設計同業',children:[]}, // placeholder
-  '3661':{name:'世芯-KY',desc:'AI ASIC設計，為CSP/HPC客戶設計客製化AI加速器晶片',children:[
-    {id:'2330',t:'upstream',d:'台積電先進製程（5/3nm），主要代工廠'},
-    {id:'3443',t:'peer',d:'ASIC設計服務同業'},
-    {id:'3035',t:'peer',d:'ASIC設計服務同業'},
-    {id:'6531',t:'peer',d:'IC設計同業'},
-  ]},
-  '6510':{name:'精測電子',desc:'半導體測試介面（Probe Card/Socket），高階測試耗材',children:[
-    {id:'3413',t:'downstream',d:'測試服務客戶，使用精測探針卡'},
-    {id:'3711',t:'downstream',d:'封測設備客戶'},
-    {id:'2330',t:'downstream',d:'台積電晶圓測試客戶'},
-  ]},
-  '3658':{name:'漢磊科技',desc:'化合物半導體（SiC/GaN）晶圓代工，車用功率元件',children:[
-    {id:'2330',t:'peer',d:'晶圓代工（不同材料體系）'},
-    {id:'2303',t:'peer',d:'晶圓代工同業'},
-    {id:'5347',t:'peer',d:'特殊製程晶圓代工同業'},
-    {id:'1590',t:'downstream',d:'功率元件應用客戶'},
-  ]},
-
-  // ==================== ODM/EMS/品牌 ====================
-  '2317':{name:'鴻海精密',desc:'全球最大EMS代工廠，組裝Apple iPhone、NVIDIA AI伺服器',children:[
-    {id:'2354',t:'subsidiary',d:'金屬機殼/散熱子公司，iPhone結構件'},
-    {id:'6488',t:'subsidiary',d:'SiP模組封裝子公司'},
-    {id:'2382',t:'competitor',d:'AI伺服器組裝競爭'},
-    {id:'3231',t:'peer',d:'ODM同業，緯創'},
-    {id:'2356',t:'peer',d:'EMS/ODM同業，英業達'},
-    {id:'2330',t:'upstream',d:'晶片製程上游'},
-    {id:'2454',t:'upstream',d:'SoC晶片上游'},
-    {id:'2409',t:'upstream',d:'面板上游，友達'},
-    {id:'2327',t:'upstream',d:'被動元件上游，國巨'},
-    {id:'2308',t:'upstream',d:'電源模組上游'},
-    {id:'3037',t:'upstream',d:'PCB上游'},
-    {id:'3515',t:'upstream',t:'upstream',d:'散熱模組上游'},
-  ]},
-  '2382':{name:'廣達電腦',desc:'全球最大筆電ODM，NVIDIA GB200 NVL AI伺服器最大組裝廠',children:[
-    {id:'6669',t:'peer',d:'AI伺服器ODM同業，緯穎'},
-    {id:'2356',t:'peer',d:'伺服器ODM同業，英業達'},
-    {id:'3231',t:'peer',d:'ODM同業，緯創'},
-    {id:'2317',t:'competitor',d:'EMS/ODM競爭'},
-    {id:'2330',t:'upstream',d:'晶片製程上游'},
-    {id:'2454',t:'upstream',d:'SoC晶片上游'},
-    {id:'5274',t:'upstream',d:'BMC管理晶片上游'},
-    {id:'2308',t:'upstream',d:'電源供應器上游'},
-    {id:'3515',t:'upstream',d:'散熱模組上游'},
-    {id:'2409',t:'upstream',d:'面板上游'},
-    {id:'2327',t:'upstream',d:'被動元件上游'},
-    {id:'3037',t:'upstream',d:'IC載板/PCB上游'},
-  ]},
-  '2357':{name:'華碩電腦',desc:'品牌PC/主機板/顯示卡（ROG/ProArt/TUF系列），全球第三大NB品牌',children:[
-    {id:'2376',t:'peer',d:'主機板/顯示卡品牌同業，技嘉'},
-    {id:'2399',t:'peer',d:'主機板同業，映泰'},
-    {id:'2317',t:'peer',d:'電子製造同業'},
-    {id:'2454',t:'upstream',d:'SoC/晶片組上游'},
-    {id:'3034',t:'upstream',d:'顯示驅動IC上游'},
-    {id:'4966',t:'upstream',d:'訊號整合IC上游'},
-    {id:'2409',t:'upstream',d:'面板上游'},
-    {id:'3515',t:'upstream',d:'散熱模組上游'},
-    {id:'2327',t:'upstream',d:'被動元件上游'},
-  ]},
-  '2324':{name:'仁寶電腦',desc:'全球第二大筆電ODM廠，AI PC轉型積極布局',children:[
-    {id:'2382',t:'competitor',d:'筆電ODM主要競爭對手'},
-    {id:'3231',t:'peer',d:'ODM同業，緯創'},
-    {id:'2356',t:'peer',d:'ODM同業，英業達'},
-    {id:'2454',t:'upstream',d:'SoC晶片上游'},
-    {id:'2458',t:'upstream',d:'TouchPad IC上游'},
-    {id:'2409',t:'upstream',d:'面板上游'},
-    {id:'3037',t:'upstream',d:'PCB上游'},
-  ]},
-  '3231':{name:'緯創資通',desc:'ODM廠，PC/AI伺服器代工，已切入NVIDIA AI伺服器供應鏈',children:[
-    {id:'2382',t:'competitor',d:'ODM競爭對手'},
-    {id:'2356',t:'peer',d:'ODM/EMS同業'},
-    {id:'2324',t:'peer',d:'筆電ODM同業'},
-    {id:'6669',t:'peer',d:'AI伺服器ODM同業'},
-    {id:'2454',t:'upstream',d:'SoC晶片上游'},
-    {id:'2308',t:'upstream',d:'電源供應器上游'},
-    {id:'2327',t:'upstream',d:'被動元件上游'},
-  ]},
-  '2356':{name:'英業達',desc:'伺服器與筆電ODM，AI伺服器（NVL72）出貨動能強',children:[
-    {id:'6669',t:'peer',d:'AI伺服器ODM同業，緯穎'},
-    {id:'2382',t:'competitor',d:'AI伺服器ODM競爭'},
-    {id:'3231',t:'peer',d:'ODM同業'},
-    {id:'5274',t:'upstream',d:'BMC管理晶片上游'},
-    {id:'2308',t:'upstream',d:'電源供應器上游'},
-    {id:'3037',t:'upstream',d:'PCB/載板上游'},
-    {id:'3515',t:'upstream',d:'散熱模組上游'},
-  ]},
-  '6669':{name:'緯穎科技',desc:'AI伺服器ODM，NVIDIA GB200 NVL主要組裝商，廣達轉投資',children:[
-    {id:'2382',t:'subsidiary',d:'母公司廣達電腦'},
-    {id:'2356',t:'peer',d:'AI伺服器ODM同業'},
-    {id:'3231',t:'peer',d:'AI伺服器ODM同業'},
-    {id:'5274',t:'upstream',d:'BMC管理晶片上游'},
-    {id:'6415',t:'upstream',d:'電源管理IC上游'},
-    {id:'6531',t:'upstream',d:'電源管理IC上游'},
-    {id:'2308',t:'upstream',d:'電源供應器模組上游'},
-    {id:'3515',t:'upstream',d:'AI伺服器散熱模組上游'},
-    {id:'3037',t:'upstream',d:'AI伺服器載板上游'},
-  ]},
-  '3005':{name:'神基科技',desc:'堅固型筆電（Rugged Laptop）與工業電腦ODM，軍規產品',children:[
-    {id:'2382',t:'peer',d:'電腦ODM同業'},
-    {id:'6414',t:'peer',d:'工業電腦同業，樺漢'},
-    {id:'3706',t:'peer',d:'工業電腦ODM同業'},
-    {id:'2454',t:'upstream',d:'SoC晶片上游'},
-  ]},
-  '3706':{name:'神達電腦',desc:'工業電腦與雲端伺服器ODM，MiTAC旗下',children:[
-    {id:'3005',t:'peer',d:'工業電腦同業'},
-    {id:'6414',t:'peer',d:'工業電腦同業'},
-    {id:'2356',t:'peer',d:'伺服器ODM同業'},
-    {id:'2454',t:'upstream',d:'處理器晶片上游'},
-  ]},
-  '2376':{name:'技嘉科技',desc:'主機板/顯示卡品牌廠，AI GPU伺服器（HGX B200）供應鏈',children:[
-    {id:'2357',t:'competitor',d:'主機板/顯示卡品牌競爭，華碩'},
-    {id:'2399',t:'peer',d:'主機板品牌同業，映泰'},
-    {id:'2454',t:'upstream',d:'晶片組上游'},
-    {id:'4966',t:'upstream',d:'訊號整合IC上游'},
-    {id:'2327',t:'upstream',d:'被動元件上游'},
-  ]},
-  '2354':{name:'鴻準精密',desc:'鴻海旗下金屬機殼/散熱模組，iPhone結構件主要供應商',children:[
-    {id:'2317',t:'subsidiary',d:'母公司鴻海精密'},
-    {id:'2474',t:'peer',d:'金屬機殼同業，可成科技'},
-    {id:'3515',t:'peer',d:'散熱模組同業'},
-    {id:'2317',t:'downstream',d:'EMS組裝客戶'},
-  ]},
-  '2474':{name:'可成科技',desc:'精密金屬機殼，iPhone/NB鋁合金外殼，鴻海供應商',children:[
-    {id:'2354',t:'competitor',d:'金屬機殼直接競爭'},
-    {id:'2317',t:'downstream',d:'EMS組裝客戶'},
-    {id:'2382',t:'downstream',d:'ODM機殼客戶'},
-  ]},
-  '4256':{name:'創見資訊',desc:'記憶體模組品牌商，工業級SSD/記憶體，全球通路',children:[
-    {id:'2344',t:'upstream',d:'NAND Flash上游'},
-    {id:'2337',t:'upstream',d:'NOR Flash上游'},
-    {id:'8016',t:'upstream',d:'SSD控制器上游'},
-    {id:'8299',t:'upstream',d:'SSD控制器上游'},
-    {id:'2408',t:'upstream',d:'DRAM上游'},
-  ]},
-  '6414':{name:'樺漢科技',desc:'工業電腦（IPC）整合商，ADLINK產品，工業4.0及AIoT',children:[
-    {id:'3005',t:'peer',d:'工業電腦同業，神基'},
-    {id:'3706',t:'peer',d:'工業電腦同業，神達'},
-    {id:'2454',t:'upstream',d:'嵌入式處理器上游'},
-    {id:'3596',t:'peer',d:'工業通訊同業'},
-  ]},
-  '2399':{name:'映泰',desc:'主機板及GPU顯示卡製造，AI/挖礦GPU應用',children:[
-    {id:'2357',t:'peer',d:'主機板品牌同業'},
-    {id:'2376',t:'peer',d:'主機板/顯示卡同業'},
-    {id:'2454',t:'upstream',d:'晶片組上游'},
-  ]},
-
-  // ==================== 面板/光電 ====================
-  '2409':{name:'友達光電',desc:'全球前二大LCD面板廠，車用顯示器/工業面板積極布局',children:[
-    {id:'3481',t:'competitor',d:'台灣最大面板業競爭對手，群創'},
-    {id:'3034',t:'upstream',d:'顯示驅動IC上游，聯詠'},
-    {id:'3698',t:'upstream',d:'LED背光模組上游，隆達'},
-    {id:'5371',t:'upstream',d:'背光模組上游，中光電'},
-    {id:'2317',t:'downstream',d:'EMS組裝客戶，面板供應'},
-    {id:'2382',t:'downstream',d:'筆電ODM面板客戶'},
-    {id:'2357',t:'downstream',d:'顯示器品牌客戶'},
-  ]},
-  '3481':{name:'群創光電',desc:'台灣第二大面板廠（原奇美電），LCD/AMOLED多元布局',children:[
-    {id:'2409',t:'competitor',d:'面板業直接競爭對手'},
-    {id:'3034',t:'upstream',d:'顯示驅動IC上游'},
-    {id:'3698',t:'upstream',d:'LED背光上游'},
-    {id:'2317',t:'downstream',d:'EMS/ODM面板客戶'},
-    {id:'2382',t:'downstream',d:'ODM筆電面板客戶'},
-  ]},
-  '3698':{name:'隆達電子',desc:'LED元件/背光模組大廠，友達集團關係企業',children:[
-    {id:'2409',t:'subsidiary',d:'友達集團關係企業'},
-    {id:'3481',t:'downstream',d:'面板背光模組客戶'},
-    {id:'2448',t:'competitor',d:'LED元件同業'},
-    {id:'3265',t:'upstream',d:'化學材料上游'},
-  ]},
-  '2448':{name:'晟碟半導體',desc:'LED磊晶/晶粒製造（原晶電），化合物半導體',children:[
-    {id:'3698',t:'competitor',d:'LED元件競爭，隆達'},
-    {id:'3658',t:'peer',d:'化合物半導體同業'},
-    {id:'2409',t:'downstream',d:'面板背光客戶'},
-    {id:'3481',t:'downstream',d:'面板背光客戶'},
-  ]},
-  '3008':{name:'大立光',desc:'全球最大光學鏡頭廠，智慧型手機鏡頭市佔全球第一',children:[
-    {id:'3406',t:'competitor',d:'光學鏡頭同業競爭，玉晶光'},
-    {id:'2317',t:'downstream',d:'iPhone鏡頭主要供應，鴻海下游'},
-    {id:'2474',t:'peer',d:'精密製造同業'},
-  ]},
-  '3406':{name:'玉晶光',desc:'光學鏡頭模組，iPhone Pro系列主要鏡頭供應商之一',children:[
-    {id:'3008',t:'competitor',d:'光學鏡頭直接競爭'},
-    {id:'2317',t:'downstream',d:'EMS鏡頭組裝客戶'},
-  ]},
-  '5371':{name:'中光電',desc:'背光模組（DBLM）製造，為友達/群創等面板廠供應',children:[
-    {id:'2409',t:'downstream',d:'面板廠主要客戶'},
-    {id:'3481',t:'downstream',d:'面板廠客戶'},
-    {id:'3698',t:'peer',d:'背光/LED同業'},
-  ]},
-  '3450':{name:'聯鈞光電',desc:'光通訊元件製造，資料中心高速光纖傳輸受惠',children:[
-    {id:'2345',t:'downstream',d:'網通設備光纖客戶'},
-    {id:'2412',t:'downstream',d:'電信基礎建設客戶'},
-    {id:'3596',t:'peer',d:'網通同業'},
-  ]},
-  '2439':{name:'美律實業',desc:'聲學元件（揚聲器/麥克風/耳機），AirPods供應鏈',children:[
-    {id:'2317',t:'downstream',d:'EMS組裝客戶（AirPods）'},
-    {id:'2357',t:'downstream',d:'電腦音效設備客戶'},
-    {id:'3023',t:'peer',d:'連接器/電子零組件同業'},
-  ]},
-
-  // ==================== 電子零組件 ====================
-  '2308':{name:'台達電子',desc:'全球電源供應器龍頭，AI伺服器PSU關鍵供應商，台達電廠務',children:[
-    {id:'2301',t:'peer',d:'電源供應/光電同業，光寶'},
-    {id:'6449',t:'peer',d:'電源供應器同業，海韻'},
-    {id:'1590',t:'peer',d:'工廠自動化同業，亞德客'},
-    {id:'2327',t:'upstream',d:'被動元件上游，國巨'},
-    {id:'2492',t:'upstream',d:'被動元件上游，華新科'},
-    {id:'2330',t:'downstream',d:'台積電廠務設備電源客戶'},
-    {id:'6669',t:'downstream',d:'AI伺服器PSU主要客戶'},
-    {id:'2382',t:'downstream',d:'伺服器ODM電源客戶'},
-    {id:'2356',t:'downstream',d:'伺服器ODM電源客戶'},
-  ]},
-  '2301':{name:'光寶科技',desc:'LED/電源供應器/光學元件多角化，AI伺服器電源與光通訊受惠',children:[
-    {id:'2308',t:'peer',d:'電源供應同業，台達電'},
-    {id:'6449',t:'peer',d:'電源供應器同業'},
-    {id:'3450',t:'peer',d:'光通訊元件同業'},
-    {id:'2382',t:'downstream',d:'伺服器ODM電源客戶'},
-    {id:'2317',t:'downstream',d:'EMS電源模組客戶'},
-  ]},
-  '6449':{name:'海韻電子',desc:'電源供應器（PSU）製造，PC及AI伺服器電源供應商',children:[
-    {id:'2308',t:'competitor',d:'電源供應器主要競爭'},
-    {id:'2301',t:'peer',d:'電源供應同業'},
-    {id:'2382',t:'downstream',d:'伺服器ODM客戶'},
-    {id:'2357',t:'downstream',d:'品牌PC電源客戶'},
-  ]},
-  '1590':{name:'亞德客-KY',desc:'氣動元件與工廠自動化，智慧製造關鍵零組件，台積電供應鏈',children:[
-    {id:'2330',t:'downstream',d:'台積電廠務自動化客戶'},
-    {id:'2303',t:'downstream',d:'晶圓廠自動化客戶'},
-    {id:'2308',t:'peer',d:'工業電子同業'},
-    {id:'6405',t:'peer',d:'廠務設備同業'},
-  ]},
-  '3515':{name:'奇鋐科技',desc:'散熱模組（VC均溫板/液冷）大廠，AI伺服器散熱需求強勁',children:[
-    {id:'6230',t:'peer',d:'散熱模組同業，超眾'},
-    {id:'8462',t:'peer',d:'散熱模組同業，志超'},
-    {id:'2354',t:'peer',d:'精密金屬製造同業'},
-    {id:'6669',t:'downstream',d:'AI伺服器散熱客戶'},
-    {id:'2382',t:'downstream',d:'伺服器散熱客戶'},
-    {id:'2356',t:'downstream',d:'伺服器散熱客戶'},
-    {id:'2317',t:'downstream',d:'EMS散熱客戶'},
-  ]},
-  '6230':{name:'超眾科技',desc:'散熱模組（熱管/均溫板），伺服器與電動車散熱',children:[
-    {id:'3515',t:'competitor',d:'散熱模組直接競爭'},
-    {id:'8462',t:'peer',d:'散熱模組同業'},
-    {id:'2382',t:'downstream',d:'伺服器散熱客戶'},
-    {id:'6669',t:'downstream',d:'AI伺服器散熱客戶'},
-  ]},
-  '8462':{name:'志超科技',desc:'散熱模組，鋁擠/熱管散熱解決方案',children:[
-    {id:'3515',t:'peer',d:'散熱模組同業'},
-    {id:'6230',t:'peer',d:'散熱模組同業'},
-    {id:'2382',t:'downstream',d:'ODM散熱客戶'},
-  ]},
-  '2327':{name:'國巨',desc:'全球前三大MLCC被動元件廠，車用/工業電子MLCC',children:[
-    {id:'2492',t:'competitor',d:'MLCC被動元件競爭'},
-    {id:'2455',t:'peer',d:'被動元件同業，奇力新'},
-    {id:'3150',t:'peer',d:'被動元件同業，禾伸堂'},
-    {id:'2317',t:'downstream',d:'EMS組裝客戶'},
-    {id:'2382',t:'downstream',d:'ODM組裝客戶'},
-    {id:'2357',t:'downstream',d:'品牌電腦客戶'},
-    {id:'2308',t:'downstream',d:'電源供應器客戶'},
-  ]},
-  '2492':{name:'華新科技',desc:'MLCC/電阻製造商，國巨主要競爭對手，車用被動元件',children:[
-    {id:'2327',t:'competitor',d:'MLCC被動元件直接競爭'},
-    {id:'2455',t:'peer',d:'被動元件同業'},
-    {id:'3150',t:'peer',d:'被動元件同業'},
-    {id:'2317',t:'downstream',d:'EMS組裝客戶'},
-    {id:'2382',t:'downstream',d:'ODM組裝客戶'},
-  ]},
-  '2455':{name:'奇力新',desc:'電感/功率元件製造，AI伺服器電源電感受惠',children:[
-    {id:'2327',t:'peer',d:'被動元件同業'},
-    {id:'2492',t:'peer',d:'被動元件同業'},
-    {id:'3150',t:'peer',d:'被動元件同業'},
-    {id:'2308',t:'downstream',d:'電源模組客戶'},
-    {id:'6669',t:'downstream',d:'AI伺服器電源電感客戶'},
-  ]},
-  '3150':{name:'禾伸堂',desc:'電容/電阻等被動元件通路與製造，工業電子應用',children:[
-    {id:'2327',t:'peer',d:'被動元件同業'},
-    {id:'2492',t:'peer',d:'被動元件同業'},
-    {id:'3036',t:'peer',d:'電子零組件通路同業'},
-  ]},
-  '3037':{name:'欣興電子',desc:'全球前三大IC載板（ABF Substrate/FC-BGA）廠，AI晶片需求強',children:[
-    {id:'3189',t:'peer',d:'IC載板同業，景碩'},
-    {id:'2367',t:'peer',d:'PCB同業，燿華'},
-    {id:'2368',t:'peer',d:'PCB同業，金像電'},
-    {id:'2313',t:'peer',d:'PCB同業，華通'},
-    {id:'6270',t:'peer',d:'IC載板同業，晟銘'},
-    {id:'2330',t:'downstream',d:'台積電先進封裝載板客戶'},
-    {id:'3711',t:'downstream',d:'封裝測試載板客戶'},
-    {id:'2454',t:'downstream',d:'聯發科晶片載板客戶'},
-    {id:'6669',t:'downstream',d:'AI伺服器主板客戶'},
-  ]},
-  '3189':{name:'景碩科技',desc:'IC載板與高階PCB，主攻網通/伺服器ABF載板',children:[
-    {id:'3037',t:'peer',d:'IC載板同業'},
-    {id:'2367',t:'peer',d:'PCB同業'},
-    {id:'2368',t:'peer',d:'PCB同業'},
-    {id:'2379',t:'downstream',d:'網通IC載板客戶'},
-    {id:'3711',t:'downstream',d:'封裝載板客戶'},
-  ]},
-  '2367':{name:'燿華電子',desc:'PCB製造，工業控制與汽車電子用高層板',children:[
-    {id:'3037',t:'peer',d:'PCB/載板同業'},
-    {id:'2368',t:'peer',d:'PCB同業'},
-    {id:'2313',t:'peer',d:'PCB同業'},
-    {id:'2317',t:'downstream',d:'EMS客戶'},
-    {id:'2382',t:'downstream',d:'ODM客戶'},
-  ]},
-  '2368':{name:'金像電子',desc:'高階PCB製造，通訊/網路/伺服器用板',children:[
-    {id:'3037',t:'peer',d:'PCB/載板同業'},
-    {id:'2367',t:'peer',d:'PCB同業'},
-    {id:'2313',t:'peer',d:'PCB同業'},
-    {id:'2345',t:'downstream',d:'網通設備PCB客戶'},
-    {id:'6669',t:'downstream',d:'AI伺服器PCB客戶'},
-  ]},
-  '2313':{name:'華通電腦',desc:'PCB/HDI板製造，手機/筆電/汽車電子',children:[
-    {id:'3037',t:'peer',d:'PCB同業'},
-    {id:'2367',t:'peer',d:'PCB同業'},
-    {id:'2368',t:'peer',d:'PCB同業'},
-    {id:'2317',t:'downstream',d:'iPhone PCB客戶'},
-    {id:'2474',t:'peer',d:'精密製造同業'},
-  ]},
-  '6270':{name:'晟銘電子',desc:'IC載板/SiP載板，HDI高密度PCB',children:[
-    {id:'3037',t:'peer',d:'IC載板同業'},
-    {id:'3189',t:'peer',d:'IC載板同業'},
-    {id:'3711',t:'downstream',d:'封裝載板客戶'},
-  ]},
-  '3533':{name:'嘉澤端子',desc:'高速連接器（PCIe/DDR/高速介面），AI伺服器高速連接需求旺',children:[
-    {id:'2351',t:'peer',d:'連接器同業，順德'},
-    {id:'3023',t:'peer',d:'連接器同業，信邦'},
-    {id:'6669',t:'downstream',d:'AI伺服器連接器客戶'},
-    {id:'2382',t:'downstream',d:'伺服器連接器客戶'},
-    {id:'2356',t:'downstream',d:'伺服器連接器客戶'},
-  ]},
-  '2351':{name:'順德工業',desc:'電子連接器/線材/網路線製造，通訊設備應用',children:[
-    {id:'3533',t:'peer',d:'連接器同業'},
-    {id:'3023',t:'peer',d:'連接器同業'},
-    {id:'2345',t:'downstream',d:'網通設備連接器客戶'},
-    {id:'2317',t:'downstream',d:'EMS連接器客戶'},
-  ]},
-  '3023':{name:'信邦電子',desc:'連接器/線材/模組，醫療/工業/電動車，高附加值市場',children:[
-    {id:'3533',t:'peer',d:'高速連接器同業'},
-    {id:'2351',t:'peer',d:'連接器同業'},
-    {id:'6414',t:'downstream',d:'工業電腦連接器客戶'},
-  ]},
-  '3003':{name:'健和興',desc:'SMT錫膏/電子化學材料，PCB製造輔助材料',children:[
-    {id:'3265',t:'peer',d:'電子化學材料同業'},
-    {id:'3037',t:'downstream',d:'PCB製造材料客戶'},
-    {id:'2367',t:'downstream',d:'PCB材料客戶'},
-  ]},
-
-  // ==================== 通信網路 ====================
-  '2345':{name:'智邦科技',desc:'全球前三大企業級乙太網路交換器ODM，CSP超大規模雲端客戶',children:[
-    {id:'3596',t:'peer',d:'網通設備ODM同業，智易'},
-    {id:'4906',t:'peer',d:'網通設備同業，正文'},
-    {id:'4977',t:'peer',d:'網通同業，眾達-KY'},
-    {id:'2379',t:'upstream',d:'Switch IC上游，瑞昱'},
-    {id:'2368',t:'upstream',d:'高階PCB上游'},
-    {id:'3450',t:'upstream',d:'光通訊模組上游'},
-    {id:'2412',t:'downstream',d:'電信設備採購客戶'},
-    {id:'4904',t:'downstream',d:'電信採購客戶'},
-  ]},
-  '3596':{name:'智易科技',desc:'WiFi/5G無線路由器ODM，企業級AP與家用路由器',children:[
-    {id:'2345',t:'peer',d:'網通ODM同業'},
-    {id:'4906',t:'peer',d:'網通同業'},
-    {id:'2379',t:'upstream',d:'WiFi/網路IC上游，瑞昱'},
-    {id:'2412',t:'downstream',d:'電信設備採購'},
-    {id:'4904',t:'downstream',d:'電信採購'},
-  ]},
-  '4906':{name:'正文科技',desc:'企業級/運營商WiFi AP和路由器，CPE設備ODM',children:[
-    {id:'2345',t:'peer',d:'網通設備同業'},
-    {id:'3596',t:'peer',d:'網通ODM同業'},
-    {id:'2379',t:'upstream',d:'WiFi/網路IC上游'},
-    {id:'2412',t:'downstream',d:'電信設備採購'},
-  ]},
-  '2412':{name:'中華電信',desc:'台灣最大電信商，固網/行動/雲端，5G基礎建設投資',children:[
-    {id:'4904',t:'competitor',d:'電信同業競爭，遠傳'},
-    {id:'3045',t:'competitor',d:'電信同業競爭，台灣大'},
-    {id:'2345',t:'upstream',d:'網路設備採購，智邦'},
-    {id:'3596',t:'upstream',d:'網通設備採購'},
-    {id:'6214',t:'upstream',d:'IT系統服務，精誠'},
-    {id:'3450',t:'upstream',d:'光纖通訊元件上游'},
-  ]},
-  '4904':{name:'遠傳電信',desc:'台灣第二大電信商，5G/光纖/企業雲端',children:[
-    {id:'2412',t:'competitor',d:'電信同業最大競爭'},
-    {id:'3045',t:'competitor',d:'電信同業競爭'},
-    {id:'2345',t:'upstream',d:'網路設備採購'},
-    {id:'6214',t:'upstream',d:'IT系統服務'},
-  ]},
-  '3045':{name:'台灣大哥大',desc:'台灣第三大電信商，momo購物/5G/企業服務',children:[
-    {id:'2412',t:'competitor',d:'電信最大競爭對手'},
-    {id:'4904',t:'competitor',d:'電信同業競爭'},
-    {id:'2345',t:'upstream',d:'網路設備採購'},
-  ]},
-  '4977':{name:'眾達-KY',desc:'電信設備/網通模組ODM，5G小基站受惠',children:[
-    {id:'2345',t:'peer',d:'網通ODM同業'},
-    {id:'3596',t:'peer',d:'網通同業'},
-    {id:'2412',t:'downstream',d:'電信設備客戶'},
-  ]},
-
-  // ==================== 電子通路 ====================
-  '3036':{name:'文曄科技',desc:'亞太前二大IC元件通路商，代理Qualcomm/TI/NXP等，AI供應鏈',children:[
-    {id:'3702',t:'competitor',d:'IC通路最大競爭對手，大聯大'},
-    {id:'2454',t:'upstream',d:'代理聯發科產品'},
-    {id:'2379',t:'upstream',d:'代理瑞昱產品'},
-    {id:'2327',t:'upstream',d:'代理國巨被動元件'},
-    {id:'2317',t:'downstream',d:'EMS/ODM採購客戶'},
-    {id:'2382',t:'downstream',d:'ODM採購客戶'},
-  ]},
-  '3702':{name:'大聯大控股',desc:'亞太最大IC元件通路商，代理TI/Renesas等主要大廠',children:[
-    {id:'3036',t:'competitor',d:'IC通路直接競爭，文曄'},
-    {id:'2317',t:'downstream',d:'EMS採購客戶'},
-    {id:'2382',t:'downstream',d:'ODM採購客戶'},
-    {id:'2327',t:'upstream',d:'代理被動元件'},
-  ]},
-
-  // ==================== 資訊服務 ====================
-  '6214':{name:'精誠資訊',desc:'IT系統整合/雲端轉型/AI解決方案，企業數位轉型',children:[
-    {id:'2453',t:'peer',d:'IT服務同業，凌群'},
-    {id:'3017',t:'peer',d:'IT/安防同業'},
-    {id:'2412',t:'downstream',d:'電信IT服務客戶'},
-    {id:'4904',t:'downstream',d:'電信IT服務客戶'},
-  ]},
-  '2453':{name:'凌群電腦',desc:'開放源碼/雲端/企業IT服務，政府機關IT系統',children:[
-    {id:'6214',t:'peer',d:'IT服務同業'},
-    {id:'3017',t:'peer',d:'IT同業'},
-  ]},
-  '3017':{name:'奇偶科技',desc:'網路影像監控系統（NVR/IP Camera），AI影像辨識應用',children:[
-    {id:'6214',t:'peer',d:'IT服務同業'},
-    {id:'2345',t:'upstream',d:'網路設備上游'},
-    {id:'2379',t:'upstream',d:'網路IC上游'},
-  ]},
-
-  // ==================== 化合物半導體 ====================
-  '3105':{name:'穩懋半導體',desc:'全球最大GaAs化合物半導體晶圓代工，5G PA（功率放大器）龍頭',children:[
-    {id:'3658',t:'peer',d:'化合物半導體同業，漢磊'},
-    {id:'2448',t:'peer',d:'LED/化合物半導體同業'},
-    {id:'2330',t:'peer',d:'晶圓代工（不同材料體系）'},
-    {id:'4977',t:'downstream',d:'5G無線模組客戶'},
-    {id:'3596',t:'downstream',d:'WiFi設備PA客戶'},
-    {id:'6285',t:'downstream',d:'IoT/WiFi模組PA客戶'},
-  ]},
-
-  // ==================== 散熱模組 ====================
-  '3324':{name:'雙鴻科技',desc:'散熱模組（均溫板/熱管/液冷），AI伺服器與電動車散熱',children:[
-    {id:'3515',t:'peer',d:'散熱模組同業，奇鋐'},
-    {id:'6230',t:'peer',d:'散熱模組同業，超眾'},
-    {id:'3549',t:'peer',d:'散熱精密金屬同業'},
-    {id:'6669',t:'downstream',d:'AI伺服器散熱客戶'},
-    {id:'2382',t:'downstream',d:'伺服器ODM散熱客戶'},
-    {id:'2317',t:'downstream',d:'EMS散熱客戶'},
-  ]},
-  '3549':{name:'健策精密',desc:'散熱模組（均溫板/液冷散熱板），高功率GPU/AI伺服器散熱',children:[
-    {id:'3515',t:'peer',d:'散熱模組同業'},
-    {id:'3324',t:'peer',d:'散熱模組同業'},
-    {id:'6230',t:'peer',d:'散熱模組同業'},
-    {id:'6669',t:'downstream',d:'AI伺服器液冷散熱客戶'},
-    {id:'2382',t:'downstream',d:'伺服器散熱客戶'},
-  ]},
-
-  // ==================== 封裝材料/基板 ====================
-  '3374':{name:'精材科技',desc:'晶圓級封裝（WLP）材料/測試服務，半導體封裝上游',children:[
-    {id:'3711',t:'downstream',d:'封裝測試服務客戶'},
-    {id:'2325',t:'downstream',d:'封裝材料客戶'},
-    {id:'3413',t:'peer',d:'半導體測試服務同業'},
-    {id:'3037',t:'peer',d:'半導體基板材料同業'},
-  ]},
-  '8150':{name:'南茂科技',desc:'半導體封裝測試（COF/CoW），顯示驅動IC與記憶體封測',children:[
-    {id:'3711',t:'competitor',d:'封裝測試競爭'},
-    {id:'6239',t:'peer',d:'封裝測試同業'},
-    {id:'3413',t:'peer',d:'封裝測試同業'},
-    {id:'3034',t:'downstream',d:'顯示驅動IC封裝客戶'},
-    {id:'2344',t:'downstream',d:'記憶體封裝客戶'},
-  ]},
-  '3462':{name:'同欣電子',desc:'半導體封裝基板/陶瓷封裝，感測器與MEMS封裝',children:[
-    {id:'3037',t:'peer',d:'封裝基板同業'},
-    {id:'3189',t:'peer',d:'IC載板同業'},
-    {id:'3711',t:'downstream',d:'封裝測試客戶'},
-    {id:'5347',t:'downstream',d:'特殊製程封裝客戶'},
-  ]},
-
-  // ==================== IC設計-感測/觸控/顯示/介面 ====================
-  '3227':{name:'原相科技',desc:'光學感測IC（滑鼠感測/指紋辨識/人體偵測），低功耗感測',children:[
-    {id:'2330',t:'upstream',d:'晶圓製程上游'},
-    {id:'2303',t:'upstream',d:'成熟製程備援'},
-    {id:'2454',t:'peer',d:'IC設計同業'},
-    {id:'2458',t:'peer',d:'觸控/感測IC同業'},
-    {id:'3545',t:'peer',d:'觸控顯示IC同業'},
-    {id:'2317',t:'downstream',d:'滑鼠/週邊設備客戶'},
-  ]},
-  '3545':{name:'敦泰電子',desc:'觸控控制IC（In-Cell TDDI）與顯示驅動IC整合，AI PC受惠',children:[
-    {id:'2330',t:'upstream',d:'晶圓製程上游'},
-    {id:'3034',t:'peer',d:'顯示驅動IC同業'},
-    {id:'3695',t:'peer',d:'顯示驅動IC同業'},
-    {id:'2458',t:'peer',d:'觸控IC同業'},
-    {id:'3227',t:'peer',d:'感測IC同業'},
-    {id:'2409',t:'downstream',d:'面板觸控IC客戶'},
-    {id:'3481',t:'downstream',d:'面板觸控IC客戶'},
-  ]},
-  '3695':{name:'奕力科技',desc:'顯示驅動IC（TDDI/DDIC）設計，中小尺寸面板與穿戴裝置應用',children:[
-    {id:'2330',t:'upstream',d:'晶圓製程上游'},
-    {id:'3034',t:'competitor',d:'顯示驅動IC直接競爭'},
-    {id:'3545',t:'peer',d:'顯示驅動IC同業'},
-    {id:'2409',t:'downstream',d:'面板驅動IC客戶'},
-    {id:'3481',t:'downstream',d:'面板驅動IC客戶'},
-  ]},
-  '5269':{name:'祥碩科技',desc:'USB SuperSpeed/高速介面IC設計，ASUS集團關係企業',children:[
-    {id:'2330',t:'upstream',d:'晶圓製程上游'},
-    {id:'4966',t:'peer',d:'高速介面IC同業，譜瑞'},
-    {id:'2379',t:'peer',d:'介面IC同業'},
-    {id:'2357',t:'subsidiary',d:'華碩集團關係企業'},
-    {id:'2317',t:'downstream',d:'USB裝置客戶'},
-    {id:'2382',t:'downstream',d:'筆電Hub IC客戶'},
-  ]},
-  '6643':{name:'M31科技',desc:'半導體矽智財IP（PHY/介面IP），台積電先進製程IP授權',children:[
-    {id:'2330',t:'downstream',d:'台積電先進製程IP授權客戶'},
-    {id:'3529',t:'peer',d:'矽智財IP同業，力旺'},
-    {id:'3035',t:'peer',d:'ASIC/IP同業，智原'},
-    {id:'3443',t:'peer',d:'IP/ASIC同業，創意'},
-    {id:'2454',t:'downstream',d:'SoC設計IP授權客戶'},
-  ]},
-  '3694':{name:'聯笙電子',desc:'環境感測IC（溫濕度/壓力），IoT感測應用',children:[
-    {id:'2330',t:'upstream',d:'晶圓製程上游'},
-    {id:'3227',t:'peer',d:'感測IC同業'},
-    {id:'3545',t:'peer',d:'感測IC同業'},
-    {id:'6414',t:'downstream',d:'工業電腦感測客戶'},
-  ]},
-  '3141':{name:'晶宏半導體',desc:'無線充電IC/NFC IC設計，Qi無線充電控制器',children:[
-    {id:'2330',t:'upstream',d:'晶圓製程上游'},
-    {id:'2303',t:'upstream',d:'成熟製程備援'},
-    {id:'2454',t:'peer',d:'IC設計同業'},
-    {id:'2317',t:'downstream',d:'無線充電方案客戶'},
-  ]},
-  '3259':{name:'鈺創科技',desc:'DRAM/記憶體介面IC設計，DDR介面緩衝IC',children:[
-    {id:'2330',t:'upstream',d:'晶圓製程上游'},
-    {id:'2408',t:'peer',d:'記憶體相關同業'},
-    {id:'8016',t:'peer',d:'記憶體控制IC同業'},
-    {id:'2382',t:'downstream',d:'伺服器DRAM介面客戶'},
-  ]},
-
-  // ==================== PCB/材料 ====================
-  '3044':{name:'健鼎科技',desc:'高層數PCB製造，伺服器/網通/汽車電子用高頻多層板',children:[
-    {id:'3037',t:'peer',d:'PCB/載板同業'},
-    {id:'2367',t:'peer',d:'PCB同業'},
-    {id:'2368',t:'peer',d:'PCB同業'},
-    {id:'2313',t:'peer',d:'PCB同業'},
-    {id:'2345',t:'downstream',d:'網通設備PCB客戶'},
-    {id:'6669',t:'downstream',d:'AI伺服器PCB客戶'},
-    {id:'2382',t:'downstream',d:'伺服器PCB客戶'},
-  ]},
-  '3484':{name:'希華晶體',desc:'石英晶振/振盪器（TCXO/OCXO），通訊/網路/IoT頻率元件',children:[
-    {id:'2345',t:'downstream',d:'網通設備晶振客戶'},
-    {id:'2379',t:'downstream',d:'網路IC搭配晶振客戶'},
-    {id:'3596',t:'downstream',d:'WiFi設備晶振客戶'},
-    {id:'3036',t:'peer',d:'電子零組件通路同業'},
-  ]},
-  '3563':{name:'牧德科技',desc:'PCB自動光學檢測（AOI）設備，半導體封裝AOI設備',children:[
-    {id:'3037',t:'downstream',d:'IC載板AOI設備客戶'},
-    {id:'2367',t:'downstream',d:'PCB製造AOI客戶'},
-    {id:'3044',t:'downstream',d:'PCB製造AOI客戶'},
-    {id:'3711',t:'downstream',d:'封裝測試AOI設備客戶'},
-    {id:'6510',t:'peer',d:'半導體設備/耗材同業'},
-  ]},
-
-  // ==================== 網通模組 ====================
-  '6285':{name:'啟碁科技',desc:'WiFi/5G FWA/IoT無線模組ODM，鴻海集團旗下',children:[
-    {id:'2317',t:'subsidiary',d:'母公司鴻海集團'},
-    {id:'2379',t:'upstream',d:'WiFi/網路IC上游，瑞昱'},
-    {id:'3105',t:'upstream',d:'5G PA化合物半導體上游'},
-    {id:'3596',t:'peer',d:'WiFi模組ODM同業'},
-    {id:'4906',t:'peer',d:'CPE/路由器ODM同業'},
-    {id:'2412',t:'downstream',d:'電信WiFi設備採購'},
-    {id:'4904',t:'downstream',d:'電信設備採購'},
-  ]},
-
-  // ==================== 車用電子 ====================
-  '3552':{name:'同致電子',desc:'車用感測器（超音波雷達/TPMS），Bosch供應商',children:[
-    {id:'2317',t:'peer',d:'車用電子同業（鴻海電動車）'},
-    {id:'3227',t:'peer',d:'感測IC應用同業'},
-    {id:'3694',t:'peer',d:'感測器同業'},
-    {id:'2308',t:'peer',d:'車用電源同業'},
-    {id:'3658',t:'upstream',d:'化合物半導體（車用功率元件）'},
-  ]},
-
-  // ==================== 光通訊 ====================
-  '3081':{name:'聯亞光電',desc:'光通訊主動元件（VCSEL/光收發器），資料中心高速光纖受惠',children:[
-    {id:'3450',t:'peer',d:'光通訊元件同業，聯鈞'},
-    {id:'2409',t:'peer',d:'光電業同業'},
-    {id:'2345',t:'downstream',d:'交換器光模組客戶'},
-    {id:'2412',t:'downstream',d:'電信光纖網路客戶'},
-    {id:'6669',t:'downstream',d:'AI伺服器光互聯客戶'},
-  ]},
-  '2461':{name:'光群雷射',desc:'雷射二極體/光通訊模組，工業用雷射元件',children:[
-    {id:'3081',t:'peer',d:'光通訊同業'},
-    {id:'3450',t:'peer',d:'光通訊同業'},
-    {id:'2409',t:'peer',d:'光電業同業'},
-  ]},
-
-  // ==================== 記憶體模組 ====================
-  '4967':{name:'十銓科技',desc:'記憶體模組品牌（DDR5/SSD），電競超頻記憶體市場',children:[
-    {id:'4256',t:'competitor',d:'記憶體模組品牌競爭，創見'},
-    {id:'2408',t:'upstream',d:'DRAM上游'},
-    {id:'2344',t:'upstream',d:'NAND Flash上游'},
-    {id:'8016',t:'upstream',d:'SSD控制器上游'},
-    {id:'8299',t:'upstream',d:'SSD控制器上游'},
-  ]},
-
-  // ==================== 精密傳動/工業自動化 ====================
-  '2049':{name:'上銀科技',desc:'精密滾珠螺桿/線性滑軌/工業機器人，全球精密傳動元件第二大',children:[
-    {id:'1590',t:'peer',d:'工業自動化同業，亞德客'},
-    {id:'2308',t:'peer',d:'工業電子/自動化同業'},
-    {id:'6405',t:'peer',d:'工廠設備同業'},
-    {id:'2330',t:'downstream',d:'半導體廠自動化設備客戶'},
-    {id:'2303',t:'downstream',d:'晶圓廠自動化客戶'},
-  ]},
-
-  // ==================== 電池模組 ====================
-  '6121':{name:'新普科技',desc:'筆電/電動車/儲能電池模組，全球最大NB電池模組廠之一',children:[
-    {id:'2382',t:'downstream',d:'筆電ODM電池客戶'},
-    {id:'2324',t:'downstream',d:'筆電ODM電池客戶'},
-    {id:'3231',t:'downstream',d:'ODM電池客戶'},
-    {id:'2308',t:'peer',d:'電子零組件同業'},
-    {id:'2301',t:'peer',d:'電源/零組件同業'},
-  ]},
-
-  // ==================== 光電/其他補齊 ====================
-  '2465':{name:'麗臺科技',desc:'NVIDIA GPU顯示卡組裝/代理，工業繪圖卡與AI加速卡',children:[
-    {id:'2376',t:'peer',d:'顯示卡品牌同業'},
-    {id:'2357',t:'peer',d:'顯示卡品牌同業'},
-    {id:'2399',t:'peer',d:'顯示卡同業'},
-    {id:'2317',t:'downstream',d:'組裝代工客戶'},
-  ]},
-  '2489':{name:'瑞軒科技',desc:'智慧電視/顯示器ODM，鴻海集團關係企業',children:[
-    {id:'2317',t:'subsidiary',d:'鴻海集團關係企業'},
-    {id:'2409',t:'upstream',d:'面板上游'},
-    {id:'3481',t:'upstream',d:'面板上游'},
-    {id:'3034',t:'upstream',d:'顯示驅動IC上游'},
-    {id:'2382',t:'peer',d:'顯示器ODM同業'},
-  ]},
-  '6409':{name:'旭隼科技',desc:'高功率LED/雷射光源，工業檢測與醫療用光源',children:[
-    {id:'3698',t:'peer',d:'LED元件同業'},
-    {id:'2448',t:'peer',d:'LED磊晶同業'},
-    {id:'3081',t:'peer',d:'光電元件同業'},
-    {id:'3563',t:'downstream',d:'AOI檢測光源客戶'},
-  ]},
-  '3217':{name:'優群科技',desc:'筆電/桌機鍵盤模組ODM，鍵盤觸控板整合模組',children:[
-    {id:'2382',t:'downstream',d:'筆電ODM鍵盤客戶'},
-    {id:'2324',t:'downstream',d:'筆電ODM鍵盤客戶'},
-    {id:'2458',t:'upstream',d:'觸控IC上游'},
-    {id:'2357',t:'downstream',d:'品牌PC鍵盤客戶'},
-  ]},
-
-  // ==================== 半導體設備/測試耗材 ====================
-  '3582':{name:'條碼鼎-KY',desc:'半導體測試耗材（IC Test Socket/Probe），封測廠消耗品',children:[
-    {id:'6510',t:'peer',d:'半導體測試耗材同業，精測'},
-    {id:'3374',t:'peer',d:'封裝材料同業'},
-    {id:'3711',t:'downstream',d:'封裝測試廠客戶'},
-    {id:'3413',t:'downstream',d:'封裝測試廠客戶'},
-    {id:'6239',t:'downstream',d:'封裝測試廠客戶'},
-  ]},
-  '6598':{name:'金萬林',desc:'半導體廠務工程（超純水/廢氣處理），台積電廠務環保工程',children:[
-    {id:'6405',t:'peer',d:'半導體廠務工程同業，帆宣'},
-    {id:'2330',t:'downstream',d:'台積電廠務環保工程客戶'},
-    {id:'2303',t:'downstream',d:'聯電廠務工程客戶'},
-    {id:'5347',t:'downstream',d:'世界先進廠務客戶'},
-  ]},
-  // 散熱族群延伸
-  '3017':{name:'奇鋐',desc:'AI伺服器散熱龍頭，3D VC與液冷模組供應商',children:[
-    {id:'3324',t:'peer',d:'散熱同業，雙鴻'},
-    {id:'2421',t:'upstream',d:'風扇零組件供應，建準'},
-    {id:'3653',t:'peer',d:'均熱板同業，健策'},
-    {id:'6669',t:'downstream',d:'客戶：緯穎'},
-    {id:'2382',t:'downstream',d:'客戶：廣達'}
-  ]},
-  // 能源族群延伸
-  '6806':{name:'森崴能源',desc:'再生能源統包工程，離岸風電與光電維運',children:[
-    {id:'1513',t:'peer',d:'電力設備同業，中興電'},
-    {id:'6873',t:'peer',d:'能源開發同業，泓德能源'},
-    {id:'2412',t:'downstream',d:'企業綠電採購客戶'}
-  ]},
-  '1519':{name:'華城',desc:'重電設備大廠，受惠台電強韌電網與美國變壓器需求',children:[
-    {id:'1503',t:'peer',d:'重電同業，士電'},
-    {id:'1513',t:'peer',d:'重電同業，中興電'},
-    {id:'6806',t:'downstream',d:'變電站工程合作'}
-  ]},
-  // 以欣興為核心的 PCB/ABF 族群
-  '3037':{name:'欣興',desc:'全球ABF載板龍頭，供應伺服器與AI晶片',children:[
-    {id:'8046',t:'peer',d:'載板同業，南電'},
-    {id:'3189',t:'peer',d:'載板同業，景碩'},
-    {id:'2330',t:'downstream',d:'客戶：台積電 CoWoS 封裝配套'},
-    {id:'2317',t:'downstream',d:'客戶：鴻海集團'}
-  ]},
-  
-  // 以群聯為核心的記憶體族群
-  '8299':{name:'群聯',desc:'NAND Flash 控制 IC 領導廠商',children:[
-    {id:'2408',t:'upstream',d:'上游晶圓：南亞科'},
-    {id:'2344',t:'upstream',d:'上游晶圓：華邦電'},
-    {id:'3260',t:'peer',d:'模組同業，威剛'},
-    {id:'2330',t:'upstream',d:'代工夥伴：台積電'}
-  ]},
+  '2330':{name:'台積電',desc:'全球最大晶圓代工，AI核心',children:[
+    {id:'3037',t:'upstream',d:'載板供應'},{id:'3711',t:'upstream',d:'封測夥伴'},
+    {id:'2454',t:'downstream',d:'手機晶片客戶'},{id:'3661',t:'downstream',d:'AI ASIC客戶'}
+  ]},
+  '3037':{name:'欣興',desc:'ABF載板龍頭',children:[
+    {id:'8046',t:'peer',d:'南電'},{id:'3189',t:'peer',d:'景碩'},{id:'2330',t:'downstream',d:'客戶：台積電'}
+  ]},
+  '3017':{name:'奇鋐',desc:'散熱模組龍頭',children:[
+    {id:'3324',t:'peer',d:'雙鴻'},{id:'2421',t:'upstream',d:'風扇供應'},{id:'6669',t:'downstream',d:'伺服器客戶'}
+  ]},
+  '6806':{name:'森崴能源',desc:'綠能EPC工程',children:[
+    {id:'1513',t:'peer',d:'中興電'},{id:'1519',t:'peer',d:'華城'},{id:'2412',t:'downstream',d:'綠電客戶'}
+  ]}
 };
 
-// ================================================================
-// 完整股票清單
-// ================================================================
-const STOCK_LIST = Object.entries(STATIC_INFO).map(([code, info]) => [code, info[0]]);
+const prices = {}, dynMarkets = {}, dynIndustries = {};
+let expanded = new Set(['2330']), curF = 'all', detailId = null;
+let currentRoot = '2330', currentTree = null;
 
-// ================================================================
-// 狀態
-// ================================================================
-const prices={}, dynMarkets={}, dynIndustries={};
-let expanded=new Set(), curF='all', detailId=null, globalTradeDate='';
-let currentRoot='2330', currentTree=null;
-
-// ================================================================
-// 建樹
-// ================================================================
-function getInfo(id){ return STATIC_INFO[id]||null; }
-function getName(id){ const i=getInfo(id); return i?i[0]:(STOCK_LIST.find(s=>s[0]===id)?.[1]||id); }
-function getSector(id){ const i=getInfo(id); return dynIndustries[id]||i?.[1]||''; }
-function getMarket(id){ const i=getInfo(id); return dynMarkets[id]||i?.[2]||''; }
-
-function buildTree(rootId){
-  const info=REL_DB[rootId];
-  const name=getName(rootId);
-  if(!info) return {id:rootId,name,type:'root',desc:'此股票供應鏈資料建立中',children:[]};
-  return {
-    id:rootId, name, type:'root', desc:info.desc||getSector(rootId),
-    children:(info.children||[]).map(c=>({
-      id:c.id, name:getName(c.id), type:c.t, desc:c.d,
-      children:getLevel2(c.id, rootId)
-    }))
-  };
-}
-function getLevel2(id, exclude){
-  const info=REL_DB[id];
-  if(!info) return [];
-  return (info.children||[]).filter(c=>c.id!==exclude&&c.id!==id).slice(0,5).map(c=>({
-    id:c.id, name:getName(c.id), type:c.t, desc:c.d, children:[]
-  }));
-}
-
-// ================================================================
-// 自動補全
-// ================================================================
-function onRootInput(val){
-  const q=val.trim();
-  const ac=document.getElementById('ac-box');
-  if(!q){ac.style.display='none';return;}
-  const matches=STOCK_LIST.filter(s=>s[0].startsWith(q)||s[1].includes(q)).slice(0,10);
-  if(!matches.length){ac.style.display='none';return;}
-  ac.innerHTML=matches.map(s=>{
-    const sec=getSector(s[0]),mkt=getMarket(s[0]);
-    const mt=mkt?`<span class="stag ${mkt}" style="font-size:9px;padding:1px 5px">${mkt==='listed'?'上市':mkt==='otc'?'上櫃':'興櫃'}</span>`:'';
-    return `<div class="ac-item" onclick="selectAC('${s[0]}')"><span class="ac-code">${s[0]}</span><span class="ac-name">${s[1]}</span>${mt}<span class="ac-ind">${sec}</span></div>`;
-  }).join('');
-  ac.style.display='block';
-}
-function selectAC(code){document.getElementById('root-input').value=code;hideAC();}
-function hideAC(){document.getElementById('ac-box').style.display='none';}
-document.addEventListener('click',e=>{if(!e.target.closest('.root-wrap'))hideAC();});
-function applyRoot(){
-  const val=document.getElementById('root-input').value.trim();
-  if(!val)return;
-  currentRoot=val;
-  expanded=new Set([val]);
-  detailId=null;
-  currentTree=buildTree(currentRoot);
-  render();
-  loadAll();
-}
-
-// ================================================================
-// 資料抓取
-// ================================================================
-function isNumId(id){return /^\d{4,5}$/.test(id);}
-function tsToDate(ts){
-  if(!ts)return'';
-  const dt=new Date((ts+28800)*1000);
-  return`${dt.getUTCFullYear()}/${String(dt.getUTCMonth()+1).padStart(2,'0')}/${String(dt.getUTCDate()).padStart(2,'0')}`;
-}
-async function fetchYahoo(id){
-  if(!isNumId(id))return null;
-  try{
-    const r=await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${id}.TW?interval=1d&range=10d`);
-    if(!r.ok)return null;
-    const d=await r.json();
-    const res=d?.chart?.result?.[0];
-    if(!res)return null;
-    const meta=res.meta,ts=res.timestamp||[],q=res.indicators?.quote?.[0]||{};
-    const closes=q.close||[],opens=q.open||[],highs=q.high||[],lows=q.low||[],vols=q.volume||[];
-    let li=-1;
-    for(let i=closes.length-1;i>=0;i--){if(closes[i]!=null&&closes[i]>0){li=i;break;}}
-    if(li<0)return null;
-    const close=closes[li];
-    const prev=li>0?(closes[li-1]||meta.chartPreviousClose||close):(meta.chartPreviousClose||close);
-    const diff=close-(prev||close),chgPct=prev&&prev!==close?diff/prev*100:0;
-    return{price:close,chgPct,diff,vol:vols[li]||0,open:opens[li]||null,high:highs[li]||null,low:lows[li]||null,pe:meta.trailingPE||null,tradeDate:tsToDate(ts[li]),source:'yahoo'};
-  }catch(e){return null;}
-}
-async function fetchTWSE(){
-  const ref=prices[currentRoot];
-  if(!ref?.tradeDate)return null;
-  const ds=ref.tradeDate.replace(/\//g,'');
-  try{
-    const r=await fetch(`https://www.twse.com.tw/exchangeReport/MI_INDEX?response=json&date=${ds}&type=ALL`);
-    if(!r.ok)return null;
-    const d=await r.json();
-    const f=d.fields9,rows=d.data9;
-    if(!f||!rows||rows.length===0)return null;
-    const fi=n=>f.indexOf(n);
-    const iC=fi('證券代號'),iCl=fi('收盤價'),iDf=fi('漲跌價差'),iSg=fi('漲跌(+/-)'),
-          iV=fi('成交股數'),iP=fi('本益比'),iO=fi('開盤價'),iH=fi('最高價'),iL=fi('最低價');
-    const result={};
-    rows.forEach(row=>{
-      const code=(row[iC]||'').trim();
-      if(!code)return;
-      const close=parseFloat((row[iCl]||'').replace(/,/g,''));
-      if(isNaN(close)||close===0)return;
-      const rawDiff=parseFloat((row[iDf]||'').replace(/,/g,''))||0;
-      const sign=(row[iSg]||'').includes('-')?-1:1;
-      const diff=sign*Math.abs(rawDiff);
-      const prev=close-diff;
-      result[code]={price:close,chgPct:prev>0?diff/prev*100:0,diff,
-        vol:parseInt((row[iV]||'').replace(/,/g,''))||0,
-        pe:parseFloat((row[iP]||'').replace(/,/g,''))||null,
-        open:parseFloat((row[iO]||'').replace(/,/g,''))||null,
-        high:parseFloat((row[iH]||'').replace(/,/g,''))||null,
-        low:parseFloat((row[iL]||'').replace(/,/g,''))||null,
-        tradeDate:ref.tradeDate,source:'twse'};
-    });
-    return Object.keys(result).length>50?result:null;
-  }catch(e){return null;}
-}
-// 1. 抓取全市場產業分類與代碼 (上市+上櫃)
-async function fetchFullMarketMap() {
-  setStatus('<span class="spin"></span> 正在同步全市場產業清單...');
+// --- API 抓取邏輯 ---
+async function syncAll() {
+  setStatus('<span class="spin"></span> 正在同步全市場上市櫃資料...');
   try {
-    // 上市公司基本資料
-    const resL = await fetch('https://openapi.twse.com.tw/v1/opendata/t187ap03_L');
-    const dataL = await resL.json();
-    dataL.forEach(item => {
-      const code = item['公司代號'].trim();
-      dynMarkets[code] = 'listed';
-      dynIndustries[code] = item['產業別'] || '其他';
-      // 同步更新靜態資訊庫，讓自動補全抓得到
-      if(!STATIC_INFO[code]) STATIC_INFO[code] = [item['公司名稱'], item['產業別'], 'listed'];
+    // 1. 抓取基本資料 (上市 + 上櫃)
+    const [resL, resO] = await Promise.all([
+      fetch('https://openapi.twse.com.tw/v1/opendata/t187ap03_L'),
+      fetch('https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap03_O')
+    ]);
+    const [dataL, dataO] = await Promise.all([resL.json(), resO.json()]);
+
+    dataL.forEach(i => {
+      const c = i['公司代號'].trim();
+      dynMarkets[c] = 'listed'; dynIndustries[c] = i['產業別'];
+      STATIC_INFO[c] = [i['公司名稱'], i['產業別'], 'listed'];
+    });
+    dataO.forEach(i => {
+      const c = (i['SecuritiesCompanyCode'] || i['公司代號']).trim();
+      dynMarkets[c] = 'otc'; dynIndustries[c] = (i['Industry'] || i['產業別']);
+      STATIC_INFO[c] = [i['CompanyName'] || i['公司名稱'], dynIndustries[c], 'otc'];
     });
 
-    // 上櫃公司基本資料
-    const resO = await fetch('https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap03_O');
-    const dataO = await resO.json();
-    dataO.forEach(item => {
-      const code = (item['SecuritiesCompanyCode'] || item['公司代號']).trim();
-      dynMarkets[code] = 'otc';
-      dynIndustries[code] = item['Industry'] || item['產業別'] || '其他';
-      if(!STATIC_INFO[code]) STATIC_INFO[code] = [item['CompanyName'] || item['公司名稱'], dynIndustries[code], 'otc'];
+    // 2. 抓取收盤行情
+    const [qL, qO] = await Promise.all([
+      fetch('https://openapi.twse.com.tw/v1/exchangeReport/MI_INDEX_ALL'),
+      fetch('https://www.tpex.org.tw/openapi/v1/tpex_mainboard_quotes')
+    ]);
+    const [quotesL, quotesO] = await Promise.all([qL.json(), qO.json()]);
+
+    quotesL.forEach(r => {
+      const c = r['證券代號'], p = parseFloat(r['收盤價']), d = parseFloat(r['漲跌價差']) || 0;
+      if(!isNaN(p)) prices[c] = {price:p, diff:d, chgPct:(d/(p-d))*100, vol:parseInt(r['成交股數']), source:'twse'};
     });
-    
-    // 更新搜尋清單
-    STOCK_LIST.length = 0;
-    Object.entries(STATIC_INFO).forEach(([code, info]) => STOCK_LIST.push([code, info[0]]));
-    initSectorBar(); // 重新生成產業按鈕
+    quotesO.forEach(r => {
+      const c = r['SecuritiesCompanyCode'], p = parseFloat(r['Close']), d = parseFloat(r['Change']) || 0;
+      if(!isNaN(p)) prices[c] = {price:p, diff:d, chgPct:(d/(p-d))*100, vol:parseInt(r['TradingVolume']), source:'tpex'};
+    });
+
+    initSectorBar();
+    applyRoot();
+    setStatus(`✅ 已更新 ${Object.keys(prices).length} 支股票行情`);
   } catch (e) {
-    console.error("基本資料抓取失敗", e);
-    setStatus('⚠️ 基本資料抓取失敗，使用備援資料');
+    setStatus('❌ 資料同步失敗，請確認網路連線');
+    console.error(e);
   }
 }
-  try{
-    const r=await fetch('https://openapi.twse.com.tw/v1/opendata/t187ap03_L');
-    if(!r.ok)return;
-    const data=await r.json();
-    data.forEach(item=>{
-      const code=(item['公司代號']||'').trim();
-      if(!code)return;
-      dynMarkets[code]='listed';
-      dynIndustries[code]=item['產業別']||'';
-    });
-  }catch(e){}
-  try{
-    const r=await fetch('https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap03_O');
-    if(!r.ok)return;
-    const data=await r.json();
-    data.forEach(item=>{
-      const code=(item['SecuritiesCompanyCode']||item['公司代號']||'').trim();
-      if(!code)return;
-      if(!dynMarkets[code])dynMarkets[code]='otc';
-      if(!dynIndustries[code])dynIndustries[code]=item['Industry']||item['產業別']||'';
-    });
-  }catch(e){}
 
-function setStatus(h){document.getElementById('status').innerHTML=h;}
-function allNodes(n,a=[]){a.push(n);(n.children||[]).forEach(c=>allNodes(c,a));return a;}
-// 2. 抓取當日收盤行情 (上市+上櫃)
-async function fetchDailyQuotes() {
-  setStatus('<span class="spin"></span> 正在同步上市櫃收盤行情...');
-  try {
-    // 上市今日行情
-    const resL = await fetch('https://openapi.twse.com.tw/v1/exchangeReport/MI_INDEX_ALL');
-    const dataL = await resL.json();
-    dataL.forEach(row => {
-      const code = row['證券代號'];
-      const price = parseFloat(row['收盤價']);
-      if(isNaN(price)) return;
-      const diff = parseFloat(row['漲跌價差']) || 0;
-      prices[code] = {
-        price: price,
-        diff: diff,
-        chgPct: (diff / (price - diff)) * 100,
-        vol: parseInt(row['成交股數']) || 0,
-        pe: parseFloat(row['本益比']) || null,
-        tradeDate: new Date().toLocaleDateString(),
-        source: 'twse'
-      };
-    });
-
-    // 上櫃今日行情
-    const resO = await fetch('https://www.tpex.org.tw/openapi/v1/tpex_mainboard_quotes');
-    const dataO = await resO.json();
-    dataO.forEach(row => {
-      const code = row['SecuritiesCompanyCode'];
-      const price = parseFloat(row['Close']);
-      if(isNaN(price)) return;
-      const diff = parseFloat(row['Change']) || 0;
-      prices[code] = {
-        price: price,
-        diff: diff,
-        chgPct: (diff / (price - diff)) * 100,
-        vol: parseInt(row['TradingVolume']) || 0,
-        pe: parseFloat(row['P/E_Ratio']) || null,
-        tradeDate: new Date().toLocaleDateString(),
-        source: 'tpex'
-      };
-    });
-  } catch (e) {
-    console.error("行情抓取失敗", e);
-  }
-}
-  if(!currentTree)return;
-  setStatus(`<span class="spin"></span> Yahoo Finance 確認最後交易日 (${currentRoot})...`);
-  const root=await fetchYahoo(currentRoot);
-  if(root){prices[currentRoot]=root;globalTradeDate=root.tradeDate;}
-  if(!globalTradeDate){setStatus('❌ 無法取得資料，請確認網路後重試');return;}
-  setStatus(`<span class="spin"></span> 最後交易日：${globalTradeDate}，載入TWSE官方資料...`);
-  const twseData=await fetchTWSE();
-  let usedTWSE=false;
-  if(twseData){Object.keys(twseData).forEach(code=>{prices[code]={...twseData[code]};});usedTWSE=true;}
-  setStatus(`<span class="spin"></span> 補齊各節點報價...`);
-  const nodes=allNodes(currentTree).filter(n=>isNumId(n.id));
-  const missing=nodes.filter(n=>!prices[n.id]?.price);
-  await Promise.all(missing.map(async n=>{const p=await fetchYahoo(n.id);if(p)prices[n.id]=p;}));
-  const t=new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
-  const src=usedTWSE?`<span class="stag twse">TWSE官方</span>`:`<span class="stag yahoo">Yahoo Finance</span>`;
-  const dt=`<span class="stag date">最後交易日 ${globalTradeDate}</span>`;
-  const got=nodes.filter(n=>prices[n.id]?.price).length;
-  setStatus(`${src} ${dt} 更新：${t}　${got}/${nodes.length}支&ensp;<span style="font-size:10px;color:var(--text3)">產業分類：TWSE官方｜上市/上櫃：自動偵測｜供應鏈：人工整理</span>`);
-  render();
-
+// --- UI 工具 ---
 function initSectorBar() {
-  const sectors = [...new Set(Object.values(STATIC_INFO).map(v => v[1]))];
   const bar = document.getElementById('sector-bar');
-  // 保留標題
+  const sectors = [...new Set(Object.values(STATIC_INFO).map(v => v[1]))].filter(Boolean);
   const note = bar.querySelector('.lnote');
-  bar.innerHTML = '';
-  bar.appendChild(note);
-  
-  sectors.forEach(sec => {
-    if(!sec) return;
+  bar.innerHTML = ''; bar.appendChild(note);
+  sectors.slice(0, 15).forEach(sec => {
     const btn = document.createElement('button');
-    btn.className = 'fbtn';
-    btn.style.marginRight = '4px';
-    btn.textContent = sec;
+    btn.className = 'fbtn'; btn.textContent = sec;
     btn.onclick = () => {
-      // 找到該產業的第一支股票設為主軸
-      const firstCode = Object.keys(STATIC_INFO).find(k => STATIC_INFO[k][1] === sec);
-      if(firstCode) {
-        document.getElementById('root-input').value = firstCode;
-        applyRoot();
-      }
+      const code = Object.keys(STATIC_INFO).find(k => STATIC_INFO[k][1] === sec);
+      if(code) { document.getElementById('root-input').value = code; applyRoot(); }
     };
     bar.appendChild(btn);
   });
 }
-// ================================================================
-// Render
-// ================================================================
-function fmtV(v){if(!v)return'';if(v>=1e8)return(v/1e8).toFixed(1)+'億';if(v>=1e4)return Math.round(v/1e4)+'萬';return String(v);}
-function bCls(t){return'badge '+(t==='upstream'?'bup':t==='downstream'?'bdn':t==='subsidiary'?'bsub':t==='competitor'?'bcmp':t==='root'?'broot':'bpeer');}
-function bLbl(t){return t==='upstream'?'上游供應':t==='downstream'?'下游客戶':t==='subsidiary'?'子/關係企業':t==='competitor'?'競爭對手':t==='root'?'主軸':'同業';}
-function mkMktTag(id){
-  const m=dynMarkets[id]||getMarket(id);
-  if(!m)return null;
-  const lbl=m==='listed'?'上市':m==='otc'?'上櫃':'興櫃';
-  const el=document.createElement('span');el.className=`stag ${m}`;el.style.cssText='font-size:9px;padding:1px 5px';el.textContent=lbl;return el;
+
+function onRootInput(val) {
+  const q = val.trim(), ac = document.getElementById('ac-box');
+  if(!q) { ac.style.display='none'; return; }
+  const matches = Object.entries(STATIC_INFO).filter(([c, i]) => c.startsWith(q) || i[0].includes(q)).slice(0, 10);
+  ac.innerHTML = matches.map(([c, i]) => `<div class="ac-item" onclick="selectAC('${c}')"><span class="ac-code">${c}</span><span>${i[0]}</span></div>`).join('');
+  ac.style.display = 'block';
 }
-function setF(f,btn){curF=f;document.querySelectorAll('.fbtn[data-f]').forEach(b=>b.classList.remove('on'));btn.classList.add('on');render();}
-function expandAll(){allNodes(currentTree).forEach(n=>expanded.add(n.id));render();}
-function collapseAll(){expanded.clear();expanded.add(currentRoot);render();}
-function vis(n,q){return(curF==='all'||n.type==='root'||n.type===curF)&&(!q||(n.id.includes(q)||n.name.includes(q)));}
-function hasVis(n,q){if(vis(n,q))return true;return(n.children||[]).some(c=>hasVis(c,q));}
 
-function mkNode(n,depth,pMore,anc,q){
-  if(!hasVis(n,q))return null;
-  const p=prices[n.id]||{};
-  const sec=dynIndustries[n.id]||getSector(n.id);
-  const isExp=expanded.has(n.id);
-  const vk=(n.children||[]).filter(c=>hasVis(c,q));
-  const isDet=detailId===n.id;
-  const numId=isNumId(n.id);
+function selectAC(c) { document.getElementById('root-input').value = c; document.getElementById('ac-box').style.display='none'; applyRoot(); }
 
-  const wrap=document.createElement('div');
-  const row=document.createElement('div');row.className='nrow';
+function applyRoot() {
+  currentRoot = document.getElementById('root-input').value || '2330';
+  currentTree = buildTree(currentRoot);
+  render();
+}
 
-  if(depth>0){
-    for(let i=0;i<depth-1;i++){
-      const seg=document.createElement('div');seg.className='iseg';
-      if(anc[i]){const vl=document.createElement('div');vl.className='vl';seg.appendChild(vl);}
-      row.appendChild(seg);
-    }
-    const hc=document.createElement('div');hc.className='hc';
-    hc.innerHTML='<div class="co"></div><div class="hb"></div>';
-    row.appendChild(hc);
-  }
-  const tog=document.createElement('button');tog.className='tog';
-  if(vk.length){tog.textContent=isExp?'−':'+';tog.onclick=e=>{e.stopPropagation();isExp?expanded.delete(n.id):expanded.add(n.id);render();};}
-  else{tog.textContent='·';tog.style.opacity='.2';tog.style.cursor='default';}
-  row.appendChild(tog);
+function buildTree(id) {
+  const info = REL_DB[id], name = STATIC_INFO[id]?.[0] || id;
+  return {
+    id, name, type:'root', desc: info?.desc || dynIndustries[id] || '',
+    children: (info?.children || []).map(c => ({
+      id: c.id, name: STATIC_INFO[c.id]?.[0] || c.id, type: c.t, desc: c.d,
+      children: (REL_DB[c.id]?.children || []).slice(0, 3).map(gc => ({id: gc.id, name: STATIC_INFO[gc.id]?.[0] || gc.id, type: gc.t, desc: gc.d}))
+    }))
+  };
+}
 
-  const card=document.createElement('div');card.className='card'+(n.type==='root'?' rc':'');
-  card.onclick=()=>{detailId=detailId===n.id?null:n.id;render();};
+function render() {
+  const container = document.getElementById('tree');
+  container.innerHTML = '';
+  const node = mkNode(currentTree, 0, []);
+  if(node) container.appendChild(node);
+}
 
-  const sid=document.createElement('span');sid.className='sid';sid.textContent=numId?n.id:'';card.appendChild(sid);
-  const sn=document.createElement('span');sn.className='sn';sn.textContent=n.name;card.appendChild(sn);
-  if(sec){const it=document.createElement('span');it.className='ind-t';it.textContent=sec;it.title=sec;card.appendChild(it);}
-  const mt=mkMktTag(n.id);if(mt)card.appendChild(mt);
-  const bdg=document.createElement('span');bdg.className=bCls(n.type);bdg.textContent=bLbl(n.type);card.appendChild(bdg);
+function mkNode(n, depth, anc) {
+  const p = prices[n.id] || {}, isExp = expanded.has(n.id), isDet = detailId === n.id;
+  const wrap = document.createElement('div');
+  const row = document.createElement('div'); row.className = 'nrow';
 
-  const pc=p.price,ch=p.chgPct||0,cls=ch>0.01?'up':ch<-0.01?'dn':'neu';
-  const pv=document.createElement('span');
-  pv.className='pval '+cls;pv.textContent=pc?pc.toFixed(2):'---';card.appendChild(pv);
-  const pchg=document.createElement('span');
-  if(pc){pchg.className='pchg '+cls;pchg.textContent=(ch>0.01?'▲':ch<-0.01?'▼':'─')+Math.abs(ch).toFixed(2)+'%';}
-  else{pchg.className='pchg neu';}
-  card.appendChild(pchg);
-  const volEl=document.createElement('span');volEl.className='volp';volEl.textContent=fmtV(p.vol);card.appendChild(volEl);
-  const peEl=document.createElement('span');peEl.className='pep';peEl.textContent=p.pe?'P/E '+p.pe.toFixed(1):'';card.appendChild(peEl);
-
-  row.appendChild(card);wrap.appendChild(row);
-
-  if(isDet){
-    const dp=document.createElement('div');dp.className='dp';
-    const srcT=p.source==='twse'?'<span class="stag twse">TWSE官方</span>':p.source==='yahoo'?'<span class="stag yahoo">Yahoo</span>':'';
-    const dateI=p.tradeDate?`<span class="stag date" style="margin-left:2px">${p.tradeDate}</span>`:'';
-    const mktN=dynMarkets[n.id]||getMarket(n.id);
-    const mktH=mktN?`<span class="stag ${mktN}" style="margin-left:2px">${mktN==='listed'?'上市':mktN==='otc'?'上櫃':'興櫃'}</span>`:'';
-    const dcls=ch>0.01?'up':ch<-0.01?'dn':'neu';
-    let html=`<strong>${numId?n.id+' ':''}${n.name}</strong>${mktH} ${srcT}${dateI}<br><span style="color:var(--text2);font-size:11px">${n.desc}</span>`;
-    if(pc){
-      html+=`<div class="dg">
-        <div class="di"><span class="dl">收盤價</span><span class="dv ${dcls}">${pc.toFixed(2)}</span></div>
-        <div class="di"><span class="dl">漲跌</span><span class="dv ${dcls}">${(p.diff||0)>=0?'+':''}${(p.diff||0).toFixed(2)} (${ch.toFixed(2)}%)</span></div>
-        ${p.open?`<div class="di"><span class="dl">開盤</span><span class="dv">${p.open.toFixed(2)}</span></div>`:''}
-        ${p.high?`<div class="di"><span class="dl">最高</span><span class="dv">${p.high.toFixed(2)}</span></div>`:''}
-        ${p.low?`<div class="di"><span class="dl">最低</span><span class="dv">${p.low.toFixed(2)}</span></div>`:''}
-        ${p.vol?`<div class="di"><span class="dl">成交量</span><span class="dv">${fmtV(p.vol)}</span></div>`:''}
-        ${p.pe?`<div class="di"><span class="dl">本益比</span><span class="dv">${p.pe.toFixed(1)}</span></div>`:''}
-      </div>`;
-    }else{html+=`<div style="margin-top:6px;color:var(--text3)">無法取得股價資料</div>`;}
-    if(sec)html+=`<div class="di" style="margin-top:6px"><span class="dl">TWSE產業分類</span><span class="dv">${sec}</span></div>`;
-    html+=`<div class="rn">標籤為與上層節點的關係｜供應鏈資料人工整理，非投資建議｜非即時</div>`;
-    dp.innerHTML=html;wrap.appendChild(dp);
+  // 繪製線條
+  for(let i=0; i<depth; i++){
+    const seg = document.createElement('div'); seg.className = 'iseg';
+    if(i === depth-1) { row.appendChild(Object.assign(document.createElement('div'), {className:'hc', innerHTML:'<div class="co"></div><div class="hb"></div>'})); }
+    else { row.appendChild(seg); }
   }
 
-  if(vk.length&&isExp){
-    const cw=document.createElement('div');cw.style.paddingLeft='18px';
-    const na=[...anc,pMore];
-    vk.forEach((c,i)=>{const el=mkNode(c,depth+1,i<vk.length-1,na,q);if(el)cw.appendChild(el);});
-    wrap.appendChild(cw);
+  const card = document.createElement('div'); card.className = `card ${n.type==='root'?'rc':''}`;
+  card.onclick = () => { detailId = (isDet?null:n.id); render(); };
+  
+  const chg = p.chgPct || 0, cls = chg > 0 ? 'up' : chg < 0 ? 'dn' : 'neu';
+  card.innerHTML = `<span class="sid">${n.id}</span><span class="sn">${n.name}</span>
+    <span class="badge ${n.type==='root'?'broot':'bpeer'}">${n.type}</span>
+    <span class="pval ${cls}">${p.price?.toFixed(2) || '---'}</span>
+    <span class="pchg ${cls}">${chg.toFixed(2)}%</span>`;
+  
+  row.appendChild(card); wrap.appendChild(row);
+
+  if(isDet) {
+    const dp = document.createElement('div'); dp.className = 'dp';
+    dp.innerHTML = `<strong>${n.name} (${n.id})</strong><br>${n.desc}<br>成交量: ${Math.round(p.vol/1000)||0}張 | 來源: ${p.source||'N/A'}`;
+    wrap.appendChild(dp);
   }
+
+  if(isExp && n.children) n.children.forEach(c => wrap.appendChild(mkNode(c, depth+1, [])));
   return wrap;
 }
 
-function render(){
-  const q=document.getElementById('search').value.trim();
-  const c=document.getElementById('tree');c.innerHTML='';
-  if(!currentTree){c.innerHTML='<div class="empty-msg">請輸入股票代號並按「設為主軸」</div>';return;}
-  const el=mkNode(currentTree,0,false,[],q);
-  if(el)c.appendChild(el);
-  else c.innerHTML='<div class="empty-msg">無符合條件的節點</div>';
-}
+function setStatus(h) { document.getElementById('status').innerHTML = h; }
+function expandAll() { Object.keys(REL_DB).forEach(k => expanded.add(k)); render(); }
+function collapseAll() { expanded.clear(); expanded.add(currentRoot); render(); }
+function setF(f, b) { curF = f; document.querySelectorAll('.fbtn').forEach(btn => btn.classList.remove('on')); b.classList.add('on'); render(); }
 
-// ================================================================
 // 初始化
-// ================================================================
-// 3. 修改後的初始化流程
-(async () => {
-  // 第一步：先拿清單與產業分類
-  await fetchFullMarketMap();
-  
-  // 第二步：拿最新報價 (這會直接填滿全市場，不需要再一支一支呼叫 Yahoo)
-  await fetchDailyQuotes();
-  
-  // 剩餘的渲染邏輯
-  document.getElementById('root-input').value = currentRoot;
-  currentTree = buildTree(currentRoot);
-  expanded.add(currentRoot);
-  render();
-  
-  setStatus(`✅ 資料更新完成。共載入 ${Object.keys(prices).length} 支上市櫃股票行情`);
-})();
+syncAll();
 </script>
 </body>
 </html>
