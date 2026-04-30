@@ -130,8 +130,8 @@ async function syncAll() {
   try {
     // 1. 抓取基本資料 (上市 + 上櫃)
     const [resL, resO] = await Promise.all([
-      fetch('https://openapi.twse.com.tw/v1/opendata/t187ap03_L'),
-      fetch('https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap03_O')
+      fetch('https://cors-anywhere.herokuapp.com/'+'https://openapi.twse.com.tw/v1/opendata/t187ap03_L'),
+      fetch('https://cors-anywhere.herokuapp.com/'+'https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap03_O')
     ]);
     const [dataL, dataO] = await Promise.all([resL.json(), resO.json()]);
 
@@ -148,8 +148,8 @@ async function syncAll() {
 
     // 2. 抓取收盤行情
     const [qL, qO] = await Promise.all([
-      fetch('https://openapi.twse.com.tw/v1/exchangeReport/MI_INDEX_ALL'),
-      fetch('https://www.tpex.org.tw/openapi/v1/tpex_mainboard_quotes')
+      fetch('https://cors-anywhere.herokuapp.com/'+'https://openapi.twse.com.tw/v1/exchangeReport/MI_INDEX_ALL'),
+      fetch('https://cors-anywhere.herokuapp.com/'+'https://www.tpex.org.tw/openapi/v1/tpex_mainboard_quotes')
     ]);
     const [quotesL, quotesO] = await Promise.all([qL.json(), qO.json()]);
 
@@ -167,7 +167,7 @@ async function syncAll() {
     setStatus(`✅ 已更新 ${Object.keys(prices).length} 支股票行情`);
   } catch (e) {
     setStatus('❌ 資料同步失敗，請確認網路連線');
-    console.error(e);
+    console.error("詳細錯誤資訊:", e);
   }
 }
 
