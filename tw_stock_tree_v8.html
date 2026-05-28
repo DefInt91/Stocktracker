@@ -2263,16 +2263,35 @@ function upsertFundEntry(entry){
   renderFund();
 }
 async function tryAutoLoadFundFlow(){
-  if(fundEntries.length) return true;
-  const candidates=['./tw-fund-flow-2026-04-23.json'];
-  for(const url of candidates){
+  const urls=[];
+  try{
+    const indexRes=await fetch('./tw-fund-flow-index.json',{cache:'no-cache'});
+    if(indexRes.ok){
+      const indexData=await indexRes.json();
+      const files=Array.isArray(indexData.files)?indexData.files:[];
+      files.forEach(file=>{
+        if(typeof file==='string'&&file.trim()) urls.push('./'+file.replace(/^\.\//,''));
+      });
+    }
+  }catch(e){}
+  if(!urls.length) urls.push('./tw-fund-flow-2026-05-27.json','./tw-fund-flow-2026-04-23.json');
+
+  let loaded=false;
+  for(const url of [...new Set(urls)]){
     try{
       const r=await fetch(url,{cache:'no-cache'});
       if(!r.ok) continue;
       const data=await r.json();
-      upsertFundEntry(normalizeFundEntry(data));
-      return true;
+      const entry=normalizeFundEntry(data);
+      fundEntries=[...fundEntries.filter(item=>item.date!==entry.date),entry].sort((a,b)=>b.date.localeCompare(a.date));
+      if(!activeFundDate||entry.date>activeFundDate) activeFundDate=entry.date;
+      loaded=true;
     }catch(e){}
+  }
+  if(loaded){
+    saveFundEntries();
+    renderFund();
+    return true;
   }
   renderFund();
   return false;

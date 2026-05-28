@@ -146,6 +146,42 @@ Rules for dashboard JSON:
 - Prefer 1-3 `potentials`; include a name only when it has a specific catalyst and a clear supply-chain role.
 - The JSON is research input for the dashboard, not investment advice.
 
+## Local Dashboard File Workflow
+
+When working inside this repository and the user wants the JSON imported by the dashboard automatically:
+
+1. Create a dated fund-flow JSON file at the repository root:
+   - File name format: `tw-fund-flow-YYYY-MM-DD.json`
+   - Example: `tw-fund-flow-2026-05-27.json`
+
+2. Update `tw-fund-flow-index.json` at the repository root:
+   - Keep a top-level object with a `files` array.
+   - Add the new file name to the array.
+   - Put the newest file first.
+   - Preserve older file names unless the user explicitly asks to remove them.
+
+Example:
+
+```json
+{
+  "files": [
+    "tw-fund-flow-2026-05-27.json",
+    "tw-fund-flow-2026-04-23.json"
+  ]
+}
+```
+
+3. Validate before finishing:
+   - Parse the new JSON.
+   - Parse `tw-fund-flow-index.json`.
+   - Confirm the new file appears in `files`.
+   - Confirm `industries`, `catalysts`, and `moats` arrays have matching lengths.
+
+4. If the repository is connected to GitHub Pages:
+   - Commit both the new `tw-fund-flow-YYYY-MM-DD.json` and the updated `tw-fund-flow-index.json`.
+   - Push to GitHub.
+   - The dashboard will load all files listed in `tw-fund-flow-index.json` from the deployed GitHub Pages path.
+
 ## Quality Bar
 
 - Be specific. Avoid saying only "AI is strong"; name the bottleneck and the companies tied to it.
