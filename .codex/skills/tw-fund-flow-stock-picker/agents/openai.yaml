@@ -1,0 +1,7 @@
+interface:
+  display_name: "台股資金流選股"
+  short_description: "分析台股資金流向、產業鏈位置、龍頭股與獲利關鍵框架。"
+  default_prompt: "Use $tw-fund-flow-stock-picker to list Taiwan stock market fund-flow sectors, supply-chain leaders, margin power, U.S. stock linkages, and turnover versus market cap."
+
+policy:
+  allow_implicit_invocation: true
