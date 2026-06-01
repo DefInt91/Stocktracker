@@ -2151,7 +2151,7 @@ function normalizeSimAccount(input){
 async function tryLoadSimAccountSheet(){
   if(!SIM_ORDERS_API_URL) return false;
   try{
-    const res=await fetch(`${SIM_ORDERS_API_URL}?action=get&id=${encodeURIComponent(SIM_ACCOUNT_ID)}`,{cache:'no-cache'});
+    const res=await fetch(`${SIM_ORDERS_API_URL}?account_id=${encodeURIComponent(SIM_ACCOUNT_ID)}`,{cache:'no-store'});
     if(!res.ok) return false;
     const payload=await res.json();
     const account=payload.account||payload.data;
@@ -2166,11 +2166,23 @@ async function tryLoadSimAccountSheet(){
     return false;
   }
 }
+async function simOrdersRequest(payload){
+  if(!SIM_ORDERS_API_URL) throw new Error('Orders API not configured');
+  const response=await fetch(SIM_ORDERS_API_URL,{
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify(payload)
+  });
+  if(!response.ok) throw new Error(`HTTP ${response.status}`);
+  const data=await response.json();
+  if(!data.ok) throw new Error(data.error||'Orders request failed');
+  return data;
+}
 async function syncSimAccountSheet(){
   if(!SIM_ORDERS_API_URL) return false;
   setSimSourceStatus('Orders：同步中');
   try{
-    const payload={
+    const data=await simOrdersRequest({
       action:'upsert_account',
       account:{
         account_id:SIM_ACCOUNT_ID,
@@ -2179,17 +2191,7 @@ async function syncSimAccountSheet(){
         positions:simAccount.positions||{},
         trades:simAccount.trades||[]
       }
-    };
-    const res=await fetch(SIM_ORDERS_API_URL,{
-      method:'POST',
-      headers:{'content-type':'text/plain; charset=utf-8'},
-      body:JSON.stringify(payload)
     });
-    if(!res.ok){
-      setSimSourceStatus('Orders：同步失敗');
-      return false;
-    }
-    const data=await res.json();
     setSimSourceStatus(data.ok?'Orders：已同步':'Orders：同步失敗');
     return !!data.ok;
   }catch(e){

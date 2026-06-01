@@ -14,7 +14,7 @@ const HEADERS = [
 function doGet(event) {
   try {
     const sheet = getOrderSheet();
-    const accountId = getParam(event, "account_id") || DEFAULT_ACCOUNT_ID;
+    const accountId = getParam(event, "account_id") || getParam(event, "id") || DEFAULT_ACCOUNT_ID;
     return jsonOutput({
       ok: true,
       account: readAccount(sheet, accountId),
