@@ -2246,6 +2246,7 @@ function renderSim(){
 // 資金流向
 // ================================================================
 const FUND_STORAGE_KEY='twFundFlowEntriesV1';
+const FUND_SHEET_CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7llUOUoPnb4j6ZbVgEjnG72czNH5ZHEHPcCrpP38CDwiin1Bxe7e_XYoQpIDnNNTiSy0jg2bWAgVs/pub?gid=0&single=true&output=csv';
 const FUND_MARKET_LABEL={"strong-up":"強漲",up:"上漲",flat:"平盤",down:"下跌","strong-down":"重跌"};
 const FUND_BAR_COLORS=["#7c3aed","#0e7490","#15803d","#b45309","#be123c"];
 let fundEntries=loadFundEntries();
@@ -2289,7 +2290,100 @@ function upsertFundEntry(entry){
   saveFundEntries();
   renderFund();
 }
+function parseFundCsv(text){
+  const rows=[];
+  let row=[];
+  let cell='';
+  let quoted=false;
+  const src=String(text||'').replace(/^\uFEFF/,'');
+  for(let i=0;i<src.length;i++){
+    const char=src[i];
+    const next=src[i+1];
+    if(quoted){
+      if(char==='"'&&next==='"'){cell+='"';i++;}
+      else if(char==='"') quoted=false;
+      else cell+=char;
+    }else if(char==='"'){
+      quoted=true;
+    }else if(char===','){
+      row.push(cell);
+      cell='';
+    }else if(char==='\n'){
+      row.push(cell);
+      rows.push(row);
+      row=[];
+      cell='';
+    }else if(char!=='\r'){
+      cell+=char;
+    }
+  }
+  if(cell||row.length){
+    row.push(cell);
+    rows.push(row);
+  }
+  return rows.filter(item=>item.some(value=>String(value||'').trim()));
+}
+function parseFundSheetArray(value){
+  const text=String(value||'').trim();
+  if(!text) return [];
+  try{
+    const parsed=JSON.parse(text);
+    return Array.isArray(parsed)?parsed:[];
+  }catch(e){
+    return text.split(/[;；]/).map(item=>item.trim()).filter(Boolean);
+  }
+}
+function parseFundSheetNumber(value){
+  const text=String(value||'').replace(/,/g,'').trim();
+  if(!text) return null;
+  const num=Number(text);
+  return Number.isFinite(num)?num:null;
+}
+function parseFundSheetEntries(csvText){
+  const rows=parseFundCsv(csvText);
+  if(rows.length<2) return [];
+  const headers=rows[0].map(item=>String(item||'').trim());
+  return rows.slice(1).map(row=>{
+    const record={};
+    headers.forEach((key,index)=>{record[key]=row[index]??'';});
+    return normalizeFundEntry({
+      date:record.date,
+      market:record.market,
+      risk:record.risk,
+      foreign:parseFundSheetNumber(record.foreign),
+      industries:parseFundSheetArray(record.industries),
+      catalysts:parseFundSheetArray(record.catalysts),
+      moats:parseFundSheetArray(record.moats),
+      shortPlan:record.shortPlan,
+      midPlan:record.midPlan,
+      risksDetail:record.risksDetail,
+      potentials:parseFundSheetArray(record.potentials)
+    });
+  });
+}
+async function tryLoadFundFlowSheet(){
+  if(!FUND_SHEET_CSV_URL) return false;
+  try{
+    const res=await fetch(FUND_SHEET_CSV_URL,{cache:'no-cache'});
+    if(!res.ok) return false;
+    const csvText=await res.text();
+    const entries=parseFundSheetEntries(csvText);
+    if(!entries.length) return false;
+    entries.forEach(entry=>{
+      fundEntries=[...fundEntries.filter(item=>item.date!==entry.date),entry].sort((a,b)=>b.date.localeCompare(a.date));
+      if(!activeFundDate||entry.date>activeFundDate) activeFundDate=entry.date;
+    });
+    saveFundEntries();
+    renderFund();
+    return true;
+  }catch(e){
+    return false;
+  }
+}
 async function tryAutoLoadFundFlow(){
+  const sheetLoaded=await tryLoadFundFlowSheet();
+  if(sheetLoaded) return true;
+
   const urls=[];
   try{
     const indexRes=await fetch('./tw-fund-flow-index.json',{cache:'no-cache'});
