@@ -2121,6 +2121,10 @@ let simSourceState='Orders：尚未同步';
 function defaultSimAccount(){
   return {cash:1000000, realized:0, positions:{}, trades:[]};
 }
+function makeSimOrderId(){
+  if(window.crypto&&typeof window.crypto.randomUUID==='function') return window.crypto.randomUUID();
+  return `order-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
 function loadSimAccount(){
   try{
     const raw=localStorage.getItem(SIM_STORAGE_KEY);
@@ -2129,7 +2133,6 @@ function loadSimAccount(){
 }
 function saveSimAccount(){
   localStorage.setItem(SIM_STORAGE_KEY, JSON.stringify(simAccount));
-  syncSimAccountSheet();
 }
 function setSimSourceStatus(text){
   simSourceState=text;
@@ -2148,15 +2151,49 @@ function normalizeSimAccount(input){
     trades:Array.isArray(input.trades)?input.trades:[]
   };
 }
+function buildSimAccountFromOrders(orders){
+  const account=defaultSimAccount();
+  const sorted=[...(Array.isArray(orders)?orders:[])].sort((a,b)=>String(a.created_at||a.time).localeCompare(String(b.created_at||b.time)));
+  sorted.forEach(order=>{
+    const code=String(order.code||'');
+    const side=String(order.side||'');
+    const shares=Math.floor(Number(order.shares)||0);
+    const price=Number(order.price)||0;
+    const fee=Math.round(Number(order.fee)||0);
+    const tax=Math.round(Number(order.tax)||0);
+    if(!code||!shares||!price) return;
+    const gross=price*shares;
+    const position=account.positions[code]||{code,name:order.name||getName(code),shares:0,avgCost:0};
+    if(side==='buy'){
+      const totalCost=gross+fee;
+      const newShares=position.shares+shares;
+      position.avgCost=newShares?((position.avgCost*position.shares)+totalCost)/newShares:0;
+      position.shares=newShares;
+      account.positions[code]=position;
+      account.cash-=totalCost;
+    }else if(side==='sell'){
+      const sellShares=Math.min(shares, position.shares);
+      const proceeds=(price*sellShares)-fee-tax;
+      const realized=proceeds-(position.avgCost*sellShares);
+      position.shares-=sellShares;
+      account.cash+=proceeds;
+      account.realized+=realized;
+      if(position.shares>0) account.positions[code]=position;
+      else delete account.positions[code];
+    }
+  });
+  account.trades=[...(Array.isArray(orders)?orders:[])].sort((a,b)=>String(b.created_at||b.time).localeCompare(String(a.created_at||a.time)));
+  return account;
+}
 async function tryLoadSimAccountSheet(){
   if(!SIM_ORDERS_API_URL) return false;
   try{
-    const res=await fetch(`${SIM_ORDERS_API_URL}?account_id=${encodeURIComponent(SIM_ACCOUNT_ID)}`,{cache:'no-store'});
+    const res=await fetch(SIM_ORDERS_API_URL,{cache:'no-store'});
     if(!res.ok) return false;
     const payload=await res.json();
-    const account=payload.account||payload.data;
-    if(!payload.ok||!account) return false;
-    simAccount=normalizeSimAccount(account);
+    const orders=payload.orders||[];
+    if(!payload.ok||!Array.isArray(orders)) return false;
+    simAccount=buildSimAccountFromOrders(orders);
     localStorage.setItem(SIM_STORAGE_KEY, JSON.stringify(simAccount));
     setSimSourceStatus('Orders：已載入');
     renderSim();
@@ -2177,27 +2214,6 @@ async function simOrdersRequest(payload){
   const data=await response.json();
   if(!data.ok) throw new Error(data.error||'Orders request failed');
   return data;
-}
-async function syncSimAccountSheet(){
-  if(!SIM_ORDERS_API_URL) return false;
-  setSimSourceStatus('Orders：同步中');
-  try{
-    const data=await simOrdersRequest({
-      action:'upsert_account',
-      account:{
-        account_id:SIM_ACCOUNT_ID,
-        cash:simAccount.cash,
-        realized:simAccount.realized,
-        positions:simAccount.positions||{},
-        trades:simAccount.trades||[]
-      }
-    });
-    setSimSourceStatus(data.ok?'Orders：已同步':'Orders：同步失敗');
-    return !!data.ok;
-  }catch(e){
-    setSimSourceStatus('Orders：同步失敗');
-    return false;
-  }
 }
 function moneyText(value){
   const num=Number(value)||0;
@@ -2236,7 +2252,7 @@ function setActiveView(viewName){
   if(showSim) renderSim();
   if(showFund) renderFund();
 }
-function submitSimTrade(){
+async function submitSimTrade(){
   const code=getSimCode();
   const side=document.getElementById('sim-side').value;
   const shares=Math.floor(Number(document.getElementById('sim-shares').value));
@@ -2271,19 +2287,63 @@ function submitSimTrade(){
     else delete simAccount.positions[code];
   }
 
-  simAccount.trades.unshift({
+  const order={
+    order_id:makeSimOrderId(),
     time:new Date().toLocaleString('zh-TW'),
-    side, code, name:getName(code), shares, price, fee, tax, note
-  });
+    side, code, name:getName(code), shares, price, fee, tax, note,
+    created_at:new Date().toISOString(),
+    updated_at:new Date().toISOString()
+  };
+  simAccount.trades.unshift(order);
   simAccount.trades=simAccount.trades.slice(0,100);
   saveSimAccount();
   document.getElementById('sim-note').value='';
   renderSim();
+  if(SIM_ORDERS_API_URL){
+    setSimSourceStatus('Orders：同步中');
+    try{
+      await simOrdersRequest({action:'create_order', order});
+      setSimSourceStatus('Orders：已同步');
+      await tryLoadSimAccountSheet();
+    }catch(e){
+      setSimSourceStatus('Orders：同步失敗');
+    }
+  }
 }
-function resetSimAccount(){
+async function resetSimAccount(){
   const ok=confirm('將重設以下模擬資料：現金餘額、持倉、已實現損益、交易紀錄。確定要重設？');
   if(!ok)return;
   simAccount=defaultSimAccount();
+  saveSimAccount();
+  renderSim();
+  if(SIM_ORDERS_API_URL){
+    setSimSourceStatus('Orders：同步中');
+    try{
+      await simOrdersRequest({action:'clear_orders', confirm:'DELETE'});
+      setSimSourceStatus('Orders：已同步');
+      await tryLoadSimAccountSheet();
+    }catch(e){
+      setSimSourceStatus('Orders：同步失敗');
+    }
+  }
+}
+async function deleteSimOrder(orderId){
+  if(!orderId) return;
+  const ok=confirm('確定刪除此筆交易紀錄？刪除後持倉與損益會重新計算。');
+  if(!ok)return;
+  if(SIM_ORDERS_API_URL){
+    setSimSourceStatus('Orders：同步中');
+    try{
+      await simOrdersRequest({action:'delete_order', order_id:orderId, confirm:'DELETE'});
+      setSimSourceStatus('Orders：已同步');
+      await tryLoadSimAccountSheet();
+      return;
+    }catch(e){
+      setSimSourceStatus('Orders：刪除失敗');
+    }
+  }
+  const orders=(simAccount.trades||[]).filter(item=>item.order_id!==orderId);
+  simAccount=buildSimAccountFromOrders(orders);
   saveSimAccount();
   renderSim();
 }
@@ -2317,10 +2377,11 @@ function renderSim(){
   const tradeBox=document.getElementById('sim-trades');
   const trades=simAccount.trades||[];
   if(!trades.length) tradeBox.innerHTML='<div class="sim-empty">尚無交易紀錄</div>';
-  else tradeBox.innerHTML=`<div class="sim-table-wrap"><table class="sim-table"><thead><tr><th>時間</th><th>方向</th><th>股票</th><th>股數</th><th>價格</th><th>手續費</th><th>交易稅</th><th>備註</th></tr></thead><tbody>${trades.map(tr=>{
+  else tradeBox.innerHTML=`<div class="sim-table-wrap"><table class="sim-table"><thead><tr><th>時間</th><th>方向</th><th>股票</th><th>股數</th><th>價格</th><th>手續費</th><th>交易稅</th><th>備註</th><th>操作</th></tr></thead><tbody>${trades.map(tr=>{
     const cls=tr.side==='buy'?'up':'dn';
     const label=tr.side==='buy'?'買入':'賣出';
-    return `<tr><td>${tr.time}</td><td class="${cls}">${label}</td><td>${tr.code} ${tr.name}</td><td>${moneyText(tr.shares)}</td><td>${Number(tr.price).toFixed(2)}</td><td>${moneyText(tr.fee)}</td><td>${moneyText(tr.tax)}</td><td>${tr.note||''}</td></tr>`;
+    const orderId=String(tr.order_id||'').replace(/'/g,"\\'");
+    return `<tr><td>${tr.time}</td><td class="${cls}">${label}</td><td>${tr.code} ${tr.name}</td><td>${moneyText(tr.shares)}</td><td>${Number(tr.price).toFixed(2)}</td><td>${moneyText(tr.fee)}</td><td>${moneyText(tr.tax)}</td><td>${tr.note||''}</td><td><button class="sim-secondary" onclick="deleteSimOrder('${orderId}')">刪除</button></td></tr>`;
   }).join('')}</tbody></table></div>`;
 }
 

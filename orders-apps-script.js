@@ -1,24 +1,29 @@
-const SPREADSHEET_ID = "14SOy9cYWMA9u0F-f2co5nEEDJvF94CAuXNx9ETLR3no";
+const SPREADSHEET_ID = "1DQXQAMkoQ5GsoIjBxS1PZPM4ajIYAHLheBSBph6jL-Y";
 const SHEET_NAME = "Orders";
-const DEFAULT_ACCOUNT_ID = "default";
 
 const HEADERS = [
-  "account_id",
-  "cash",
-  "realized",
-  "positions",
-  "trades",
+  "order_id",
+  "time",
+  "side",
+  "code",
+  "name",
+  "shares",
+  "price",
+  "fee",
+  "tax",
+  "note",
+  "created_at",
   "updated_at"
 ];
 
-function doGet(event) {
+const ALLOWED_SIDES = ["buy", "sell"];
+
+function doGet() {
   try {
     const sheet = getOrderSheet();
-    const accountId = getParam(event, "account_id") || getParam(event, "id") || DEFAULT_ACCOUNT_ID;
     return jsonOutput({
       ok: true,
-      account: readAccount(sheet, accountId),
-      accounts: readAccounts(sheet)
+      orders: readOrders(sheet)
     });
   } catch (error) {
     return jsonOutput({ ok: false, error: error.message });
@@ -30,23 +35,34 @@ function doPost(event) {
     const payload = JSON.parse(event.postData.contents || "{}");
     const sheet = getOrderSheet();
 
-    if (payload.action === "upsert_account") {
-      const account = normalizeAccount(payload.account);
-      upsertAccount(sheet, account);
-      return jsonOutput({
-        ok: true,
-        account: readAccount(sheet, account.account_id)
-      });
+    if (payload.action === "create_order") {
+      const order = normalizeOrder(payload.order);
+      sheet.appendRow(HEADERS.map((header) => order[header]));
+      return jsonOutput({ ok: true, order });
     }
 
-    if (payload.action === "delete_account") {
+    if (payload.action === "update_order") {
+      const order = normalizeOrder(payload.order);
+      updateOrder(sheet, order);
+      return jsonOutput({ ok: true, order });
+    }
+
+    if (payload.action === "delete_order") {
       if (payload.confirm !== "DELETE") {
         throw new Error("Delete requires confirm=DELETE.");
       }
 
-      const accountId = String(payload.account_id || DEFAULT_ACCOUNT_ID);
-      const deleted = deleteAccount(sheet, accountId);
-      return jsonOutput({ ok: true, account: deleted });
+      const deleted = deleteOrder(sheet, payload.order_id);
+      return jsonOutput({ ok: true, order: deleted, orders: readOrders(sheet) });
+    }
+
+    if (payload.action === "clear_orders") {
+      if (payload.confirm !== "DELETE") {
+        throw new Error("Clear requires confirm=DELETE.");
+      }
+
+      clearOrders(sheet);
+      return jsonOutput({ ok: true, orders: [] });
     }
 
     throw new Error("Unsupported action.");
@@ -73,7 +89,7 @@ function ensureHeaders(sheet) {
   sheet.getRange(1, 1, sheet.getMaxRows(), 1).setNumberFormat("@");
 }
 
-function readAccounts(sheet) {
+function readOrders(sheet) {
   const lastRow = sheet.getLastRow();
 
   if (lastRow < 2) {
@@ -83,99 +99,127 @@ function readAccounts(sheet) {
   return sheet
     .getRange(2, 1, lastRow - 1, HEADERS.length)
     .getValues()
-    .map((row) => rowToAccount(row))
-    .filter((account) => account.account_id);
+    .map((row) => rowToOrder(row))
+    .filter((order) => order.order_id && ALLOWED_SIDES.includes(order.side))
+    .sort((firstOrder, secondOrder) => String(secondOrder.created_at).localeCompare(String(firstOrder.created_at)));
 }
 
-function readAccount(sheet, accountId) {
-  const targetId = String(accountId || DEFAULT_ACCOUNT_ID);
-  const accounts = readAccounts(sheet);
-  return accounts.find((account) => account.account_id === targetId) || null;
+function rowToOrder(row) {
+  const order = {};
+  HEADERS.forEach((header, index) => {
+    order[header] = row[index];
+  });
+
+  order.order_id = String(order.order_id || "");
+  order.side = String(order.side || "");
+  order.code = String(order.code || "");
+  order.name = String(order.name || "");
+  order.shares = Math.floor(Number(order.shares) || 0);
+  order.price = Number(order.price) || 0;
+  order.fee = Math.round(Number(order.fee) || 0);
+  order.tax = Math.round(Number(order.tax) || 0);
+  order.note = String(order.note || "");
+  order.time = String(order.time || "");
+  order.created_at = String(order.created_at || "");
+  order.updated_at = String(order.updated_at || "");
+
+  return order;
 }
 
-function upsertAccount(sheet, account) {
-  const rowIndex = findAccountRow(sheet, account.account_id);
-  const row = HEADERS.map((header) => account[header]);
-
-  if (rowIndex === -1) {
-    sheet.appendRow(row);
-    return;
-  }
-
-  sheet.getRange(rowIndex, 1, 1, HEADERS.length).setValues([row]);
-}
-
-function deleteAccount(sheet, accountId) {
-  const rowIndex = findAccountRow(sheet, accountId);
-
-  if (rowIndex === -1) {
-    throw new Error("Account not found.");
-  }
-
-  const deleted = rowToAccount(sheet.getRange(rowIndex, 1, 1, HEADERS.length).getValues()[0]);
-  sheet.deleteRow(rowIndex);
-  return deleted;
-}
-
-function findAccountRow(sheet, accountId) {
-  const targetId = String(accountId || DEFAULT_ACCOUNT_ID);
-  const lastRow = sheet.getLastRow();
-
-  if (lastRow < 2) {
-    return -1;
-  }
-
-  const ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
-
-  for (let index = 0; index < ids.length; index++) {
-    if (String(ids[index][0]) === targetId) {
-      return index + 2;
-    }
-  }
-
-  return -1;
-}
-
-function rowToAccount(row) {
-  return {
-    account_id: String(row[0] || DEFAULT_ACCOUNT_ID),
-    cash: Number(row[1]) || 0,
-    realized: Number(row[2]) || 0,
-    positions: parseJsonCell(row[3], {}),
-    trades: parseJsonCell(row[4], []),
-    updated_at: String(row[5] || "")
-  };
-}
-
-function normalizeAccount(rawAccount) {
+function normalizeOrder(rawOrder) {
   const now = new Date().toISOString();
-  const account = rawAccount && typeof rawAccount === "object" ? rawAccount : {};
+  const order = rawOrder && typeof rawOrder === "object" ? rawOrder : {};
+  const side = String(order.side || "").trim();
+  const code = String(order.code || "").trim();
+  const shares = Math.floor(Number(order.shares) || 0);
+  const price = Number(order.price) || 0;
+
+  if (!ALLOWED_SIDES.includes(side)) {
+    throw new Error("Invalid order side.");
+  }
+
+  if (!/^\d{4,5}$/.test(code)) {
+    throw new Error("Invalid stock code.");
+  }
+
+  if (shares <= 0) {
+    throw new Error("Shares must be greater than zero.");
+  }
+
+  if (price <= 0) {
+    throw new Error("Price must be greater than zero.");
+  }
 
   return {
-    account_id: String(account.account_id || DEFAULT_ACCOUNT_ID),
-    cash: Number(account.cash) || 0,
-    realized: Number(account.realized) || 0,
-    positions: account.positions && typeof account.positions === "object" ? account.positions : {},
-    trades: Array.isArray(account.trades) ? account.trades : [],
+    order_id: String(order.order_id || Utilities.getUuid()),
+    time: String(order.time || new Date().toLocaleString("zh-TW")),
+    side,
+    code,
+    name: String(order.name || ""),
+    shares,
+    price,
+    fee: Math.round(Number(order.fee) || 0),
+    tax: Math.round(Number(order.tax) || 0),
+    note: String(order.note || ""),
+    created_at: String(order.created_at || now),
     updated_at: now
   };
 }
 
-function parseJsonCell(value, fallback) {
-  if (!value) {
-    return fallback;
+function updateOrder(sheet, order) {
+  const rowNumber = findOrderRow(sheet, order.order_id);
+
+  if (!rowNumber) {
+    throw new Error("Order not found.");
   }
 
-  try {
-    const parsed = JSON.parse(String(value));
-    return parsed || fallback;
-  } catch (error) {
-    return fallback;
-  }
+  sheet.getRange(rowNumber, 1, 1, HEADERS.length).setValues([HEADERS.map((header) => order[header])]);
 }
 
-function getParam(event, name) {
-  return event && event.parameter ? event.parameter[name] : "";
+function deleteOrder(sheet, orderId) {
+  const rowNumber = findOrderRow(sheet, orderId);
+
+  if (!rowNumber) {
+    throw new Error("Order not found.");
+  }
+
+  const deleted = rowToOrder(sheet.getRange(rowNumber, 1, 1, HEADERS.length).getValues()[0]);
+  sheet.deleteRow(rowNumber);
+  return deleted;
+}
+
+function clearOrders(sheet) {
+  const lastRow = sheet.getLastRow();
+
+  if (lastRow < 2) {
+    return;
+  }
+
+  sheet.deleteRows(2, lastRow - 1);
+}
+
+function findOrderRow(sheet, orderId) {
+  const id = String(orderId || "");
+
+  if (!id) {
+    return 0;
+  }
+
+  const lastRow = sheet.getLastRow();
+
+  if (lastRow < 2) {
+    return 0;
+  }
+
+  const ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+
+  for (let index = 0; index < ids.length; index += 1) {
+    if (String(ids[index][0]) === id) {
+      return index + 2;
+    }
+  }
+
+  return 0;
 }
 
 function jsonOutput(data) {
