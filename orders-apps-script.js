@@ -195,7 +195,7 @@ function clearOrders(sheet) {
     return;
   }
 
-  sheet.deleteRows(2, lastRow - 1);
+  sheet.getRange(2, 1, lastRow - 1, sheet.getMaxColumns()).clearContent();
 }
 
 function findOrderRow(sheet, orderId) {
