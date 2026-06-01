@@ -2154,8 +2154,9 @@ async function tryLoadSimAccountSheet(){
     const res=await fetch(`${SIM_ORDERS_API_URL}?action=get&id=${encodeURIComponent(SIM_ACCOUNT_ID)}`,{cache:'no-cache'});
     if(!res.ok) return false;
     const payload=await res.json();
-    if(!payload.ok||!payload.data) return false;
-    simAccount=normalizeSimAccount(payload.data);
+    const account=payload.account||payload.data;
+    if(!payload.ok||!account) return false;
+    simAccount=normalizeSimAccount(account);
     localStorage.setItem(SIM_STORAGE_KEY, JSON.stringify(simAccount));
     setSimSourceStatus('Orders：已載入');
     renderSim();
@@ -2170,9 +2171,9 @@ async function syncSimAccountSheet(){
   setSimSourceStatus('Orders：同步中');
   try{
     const payload={
-      action:'upsert',
-      data:{
-        id:SIM_ACCOUNT_ID,
+      action:'upsert_account',
+      account:{
+        account_id:SIM_ACCOUNT_ID,
         cash:simAccount.cash,
         realized:simAccount.realized,
         positions:simAccount.positions||{},
