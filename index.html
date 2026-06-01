@@ -2232,7 +2232,14 @@ function getSimCode(){
 function updateSimSymbolList(){
   const list=document.getElementById('sim-symbol-list');
   if(!list)return;
-  list.innerHTML=STOCK_LIST.slice(0,600).map(([code,name])=>`<option value="${code} ${name}"></option>`).join('');
+  const merged=new Map(STOCK_LIST);
+  Object.entries(REL_DB||{}).forEach(([code,item])=>{
+    if(!merged.has(code)) merged.set(code,item.name||code);
+  });
+  list.innerHTML=[...merged.entries()]
+    .sort((a,b)=>a[0].localeCompare(b[0]))
+    .map(([code,name])=>`<option value="${code} ${name}"></option>`)
+    .join('');
 }
 function syncSimPrice(){
   const code=getSimCode();
