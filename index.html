@@ -145,6 +145,7 @@ h1{font-size:15px;font-weight:700;white-space:nowrap}
 .fund-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px}
 .fund-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
 .fund-title{font-size:12px;font-weight:700;color:var(--text2)}
+.fund-source{font-size:10px;color:var(--text3);border:1px solid var(--border);border-radius:999px;padding:3px 7px;background:var(--bg3);white-space:nowrap}
 .fund-search{width:100%;padding:7px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--bg3);color:var(--text);font-size:12px;outline:none;margin-bottom:8px}
 .fund-search:focus{border-color:var(--accent)}
 .fund-quick{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
@@ -218,11 +219,11 @@ h1{font-size:15px;font-weight:700;white-space:nowrap}
     <input type="file" id="json-file-input" accept=".json" onchange="handleJsonFile(this)">
   </div>
   <div class="view-tabs">
-    <button id="tree-tab-btn" class="tab-btn on" onclick="setActiveView('tree')">關係樹</button>
+    <button id="fund-tab-btn" class="tab-btn on" onclick="setActiveView('fund')">資金流向</button>
+    <button id="tree-tab-btn" class="tab-btn" onclick="setActiveView('tree')">關係樹</button>
     <button id="sim-tab-btn" class="tab-btn" onclick="setActiveView('sim')">建倉模擬</button>
-    <button id="fund-tab-btn" class="tab-btn" onclick="setActiveView('fund')">資金流向</button>
   </div>
-  <div id="tree-view" class="view-panel show">
+  <div id="tree-view" class="view-panel">
   <div id="json-banner" class="json-banner">
     <span>📋</span><span id="json-banner-text"></span>
     <button class="fbtn" style="margin-left:auto" onclick="document.getElementById('json-file-input').click()">換檔</button>
@@ -370,11 +371,12 @@ h1{font-size:15px;font-weight:700;white-space:nowrap}
       </div>
     </div>
   </div>
-  <div id="fund-view" class="view-panel">
+  <div id="fund-view" class="view-panel show">
     <div class="fund-layout">
       <div class="fund-panel">
         <div class="fund-head">
           <div class="fund-title">資金流日期</div>
+          <span id="fund-source" class="fund-source">資料來源：讀取中</span>
           <button class="sim-secondary" onclick="loadFundFlowFile()">載入檔案</button>
         </div>
         <input type="file" id="fund-file-input" accept=".json,application/json" style="display:none" onchange="handleFundFile(this)">
@@ -2104,6 +2106,8 @@ function render(){
 // 建倉模擬
 // ================================================================
 const SIM_STORAGE_KEY='twStockTradeSimulatorV1';
+const SIM_ACCOUNT_ID='default';
+const SIM_ORDERS_API_URL='';
 let simAccount=loadSimAccount();
 
 function defaultSimAccount(){
@@ -2117,6 +2121,56 @@ function loadSimAccount(){
 }
 function saveSimAccount(){
   localStorage.setItem(SIM_STORAGE_KEY, JSON.stringify(simAccount));
+  syncSimAccountSheet();
+}
+function normalizeSimAccount(input){
+  if(!input||typeof input!=='object') return defaultSimAccount();
+  return {
+    cash:Number(input.cash)||0,
+    realized:Number(input.realized)||0,
+    positions:input.positions&&typeof input.positions==='object'?input.positions:{},
+    trades:Array.isArray(input.trades)?input.trades:[]
+  };
+}
+async function tryLoadSimAccountSheet(){
+  if(!SIM_ORDERS_API_URL) return false;
+  try{
+    const res=await fetch(`${SIM_ORDERS_API_URL}?action=get&id=${encodeURIComponent(SIM_ACCOUNT_ID)}`,{cache:'no-cache'});
+    if(!res.ok) return false;
+    const payload=await res.json();
+    if(!payload.ok||!payload.data) return false;
+    simAccount=normalizeSimAccount(payload.data);
+    localStorage.setItem(SIM_STORAGE_KEY, JSON.stringify(simAccount));
+    renderSim();
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+async function syncSimAccountSheet(){
+  if(!SIM_ORDERS_API_URL) return false;
+  try{
+    const payload={
+      action:'upsert',
+      data:{
+        id:SIM_ACCOUNT_ID,
+        cash:simAccount.cash,
+        realized:simAccount.realized,
+        positions:simAccount.positions||{},
+        trades:simAccount.trades||[]
+      }
+    };
+    const res=await fetch(SIM_ORDERS_API_URL,{
+      method:'POST',
+      headers:{'content-type':'application/json; charset=utf-8'},
+      body:JSON.stringify(payload)
+    });
+    if(!res.ok) return false;
+    const data=await res.json();
+    return !!data.ok;
+  }catch(e){
+    return false;
+  }
 }
 function moneyText(value){
   const num=Number(value)||0;
@@ -2253,6 +2307,7 @@ let fundEntries=loadFundEntries();
 let activeFundDate=fundEntries[0]?.date||null;
 let activeFundTab='overview';
 let fundDateFilter='';
+let fundSourceState={label:'本機暫存', detail:'', count:fundEntries.length};
 const fundMonthState={};
 
 function loadFundEntries(){
@@ -2287,8 +2342,19 @@ function normalizeFundEntry(input){
 function upsertFundEntry(entry){
   fundEntries=[...fundEntries.filter(item=>item.date!==entry.date),entry].sort((a,b)=>b.date.localeCompare(a.date));
   activeFundDate=entry.date;
+  setFundSource('手動匯入','localStorage',fundEntries.length);
   saveFundEntries();
   renderFund();
+}
+function setFundSource(label, detail, count){
+  fundSourceState={label, detail:detail||'', count:count??fundEntries.length};
+  renderFundSourceStatus();
+}
+function renderFundSourceStatus(){
+  const el=document.getElementById('fund-source');
+  if(!el) return;
+  const detail=fundSourceState.detail?`（${fundSourceState.detail}）`:'';
+  el.textContent=`資料來源：${fundSourceState.label}${detail}｜${fundSourceState.count||0} 筆`;
 }
 function parseFundCsv(text){
   const rows=[];
@@ -2362,27 +2428,28 @@ function parseFundSheetEntries(csvText){
   });
 }
 async function tryLoadFundFlowSheet(){
-  if(!FUND_SHEET_CSV_URL) return false;
+  if(!FUND_SHEET_CSV_URL) return 'disabled';
   try{
     const res=await fetch(FUND_SHEET_CSV_URL,{cache:'no-cache'});
-    if(!res.ok) return false;
+    if(!res.ok) return 'failed';
     const csvText=await res.text();
     const entries=parseFundSheetEntries(csvText);
-    if(!entries.length) return false;
+    if(!entries.length) return 'empty';
     entries.forEach(entry=>{
       fundEntries=[...fundEntries.filter(item=>item.date!==entry.date),entry].sort((a,b)=>b.date.localeCompare(a.date));
       if(!activeFundDate||entry.date>activeFundDate) activeFundDate=entry.date;
     });
+    setFundSource('Google Sheet','',entries.length);
     saveFundEntries();
     renderFund();
-    return true;
+    return 'loaded';
   }catch(e){
-    return false;
+    return 'failed';
   }
 }
 async function tryAutoLoadFundFlow(){
-  const sheetLoaded=await tryLoadFundFlowSheet();
-  if(sheetLoaded) return true;
+  const sheetResult=await tryLoadFundFlowSheet();
+  if(sheetResult==='loaded') return true;
 
   const urls=[];
   try{
@@ -2410,10 +2477,13 @@ async function tryAutoLoadFundFlow(){
     }catch(e){}
   }
   if(loaded){
+    const detail=sheetResult==='empty'?'Sheet 無資料':sheetResult==='failed'?'Sheet 讀取失敗':'';
+    setFundSource('GitHub JSON',detail,fundEntries.length);
     saveFundEntries();
     renderFund();
     return true;
   }
+  setFundSource('本機暫存','Sheet/JSON 未載入',fundEntries.length);
   renderFund();
   return false;
 }
@@ -2569,6 +2639,7 @@ function renderFundDateList(){
 }
 function renderFund(){
   renderFundDateList();
+  renderFundSourceStatus();
   const entry=getFundEntry();
   const content=document.getElementById('fund-content');
   if(!content)return;
@@ -2699,6 +2770,7 @@ function renderFundTrend(content){
   initSectorBar();
   updateSimSymbolList();
   renderSim();
+  tryLoadSimAccountSheet();
   renderFund();
   tryAutoLoadFundFlow();
   window.addEventListener('resize',()=>{
@@ -2707,7 +2779,7 @@ function renderFundTrend(content){
   setStatus(autoLoaded
     ? '<span class="stag json">JSON快取</span> 已載入快取報價；按「更新報價」才會手動抓 TWSE / TPEx 官方資料'
     : '<span class="stag json">JSON快取</span> 尚未自動載入，請用右上 JSON資料載入，或選股後手動更新官方報價');
-  showLandingPage();
+  setActiveView('fund');
 })();
 </script>
 </body>
