@@ -123,6 +123,9 @@ h1{font-size:15px;font-weight:700;white-space:nowrap}
 .sim-grid{display:grid;grid-template-columns:minmax(280px,360px) 1fr;gap:12px;align-items:start}
 .sim-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px}
 .sim-title{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px}
+.sim-title-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.sim-title-row .sim-title{margin-bottom:0}
+.sim-source{font-size:10px;color:var(--text3);border:1px solid var(--border);border-radius:999px;padding:3px 7px;background:var(--bg3);white-space:nowrap}
 .sim-form{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .sim-form label{font-size:10px;color:var(--text3);display:flex;flex-direction:column;gap:4px}
 .sim-form input,.sim-form select{width:100%;padding:7px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--bg3);color:var(--text);font-size:12px;outline:none}
@@ -354,6 +357,10 @@ h1{font-size:15px;font-weight:700;white-space:nowrap}
         </div>
       </div>
       <div>
+        <div class="sim-title-row">
+          <div class="sim-title">帳戶狀態</div>
+          <span id="sim-source" class="sim-source">Orders：讀取中</span>
+        </div>
         <div class="sim-kpis">
           <div class="sim-kpi"><span>現金餘額</span><strong id="sim-cash">0</strong></div>
           <div class="sim-kpi"><span>持倉市值</span><strong id="sim-market-value">0</strong></div>
@@ -2109,6 +2116,7 @@ const SIM_STORAGE_KEY='twStockTradeSimulatorV1';
 const SIM_ACCOUNT_ID='default';
 const SIM_ORDERS_API_URL='https://script.google.com/macros/s/AKfycbzL9buDo2mgy1sO7n-kpcZaB1JkzQ5l1SvVylcCsoj-py0DtPPcGEr09wh-1Cq6d1JOag/exec';
 let simAccount=loadSimAccount();
+let simSourceState='Orders：尚未同步';
 
 function defaultSimAccount(){
   return {cash:1000000, realized:0, positions:{}, trades:[]};
@@ -2122,6 +2130,14 @@ function loadSimAccount(){
 function saveSimAccount(){
   localStorage.setItem(SIM_STORAGE_KEY, JSON.stringify(simAccount));
   syncSimAccountSheet();
+}
+function setSimSourceStatus(text){
+  simSourceState=text;
+  renderSimSourceStatus();
+}
+function renderSimSourceStatus(){
+  const el=document.getElementById('sim-source');
+  if(el) el.textContent=simSourceState;
 }
 function normalizeSimAccount(input){
   if(!input||typeof input!=='object') return defaultSimAccount();
@@ -2141,14 +2157,17 @@ async function tryLoadSimAccountSheet(){
     if(!payload.ok||!payload.data) return false;
     simAccount=normalizeSimAccount(payload.data);
     localStorage.setItem(SIM_STORAGE_KEY, JSON.stringify(simAccount));
+    setSimSourceStatus('Orders：已載入');
     renderSim();
     return true;
   }catch(e){
+    setSimSourceStatus('Orders：讀取失敗，使用本機');
     return false;
   }
 }
 async function syncSimAccountSheet(){
   if(!SIM_ORDERS_API_URL) return false;
+  setSimSourceStatus('Orders：同步中');
   try{
     const payload={
       action:'upsert',
@@ -2162,13 +2181,18 @@ async function syncSimAccountSheet(){
     };
     const res=await fetch(SIM_ORDERS_API_URL,{
       method:'POST',
-      headers:{'content-type':'application/json; charset=utf-8'},
+      headers:{'content-type':'text/plain; charset=utf-8'},
       body:JSON.stringify(payload)
     });
-    if(!res.ok) return false;
+    if(!res.ok){
+      setSimSourceStatus('Orders：同步失敗');
+      return false;
+    }
     const data=await res.json();
+    setSimSourceStatus(data.ok?'Orders：已同步':'Orders：同步失敗');
     return !!data.ok;
   }catch(e){
+    setSimSourceStatus('Orders：同步失敗');
     return false;
   }
 }
@@ -2261,6 +2285,7 @@ function resetSimAccount(){
   renderSim();
 }
 function renderSim(){
+  renderSimSourceStatus();
   const positions=Object.values(simAccount.positions||{});
   let marketValue=0, unrealized=0;
   positions.forEach(pos=>{
