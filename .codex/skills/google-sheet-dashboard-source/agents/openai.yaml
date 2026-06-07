@@ -1,4 +1,0 @@
-interface:
-  display_name: "Google Sheet Dashboard Source"
-  short_description: "Use Google Sheets and JSON fallback as dashboard data sources."
-  default_prompt: "Use Google Sheet as the dashboard source with JSON fallback."
